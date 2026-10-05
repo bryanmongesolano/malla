@@ -20,11 +20,11 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2 sm:px-5 sm:py-2.5 transition-colors duration-200">
-      <div className="flex items-center justify-between gap-3 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between gap-5 sm:gap-7 max-w-7xl mx-auto">
         {/* Progress bar + metrics on left */}
-        <div className="flex-1 flex flex-col justify-center gap-1.5 min-w-0">
-          {/* Progress bar */}
-          <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div className="flex-1 flex flex-col justify-center gap-2 min-w-0">
+          {/* Progress bar (thicker, rounded, smooth gradient) */}
+          <div className="w-full h-2.5 sm:h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
             <div
               className="h-full bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 transition-all duration-500 rounded-full"
               style={{ width: `${overall.percentCompleted}%` }}
