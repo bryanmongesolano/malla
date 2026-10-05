@@ -23,6 +23,7 @@
             html.style.colorScheme = 'light';
           }
           html.style.backgroundColor = color;
+          html.style.setProperty('--topbar-bg', color);
           var meta = document.getElementById('theme-color-meta');
           if (meta) {
             meta.setAttribute('content', color);

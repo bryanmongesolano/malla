@@ -13,6 +13,7 @@ import {
   simulateGraduation,
   canTransition
 } from '@shared/index.js';
+import { computeThemeColor } from './themeColor.js';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 export function App() {
@@ -60,13 +61,7 @@ export function App() {
   });
 
   useEffect(() => {
-    let color: string;
-    if (isSimulationMode) {
-      color = isDark ? '#261b0c' : '#fef0c7';
-    } else {
-      color = isDark ? '#020617' : '#ffffff';
-    }
-
+    // 1. Toggle dark class first so DOM styles reflect the active theme
     if (isDark) {
       document.documentElement.classList.add('dark');
       document.documentElement.style.colorScheme = 'dark';
@@ -77,10 +72,15 @@ export function App() {
       localStorage.setItem('malla_theme', 'light');
     }
 
+    // 2. Dynamically calculate the exact blended opaque color for topbar & iOS status bar
+    const { color, isDarkText } = computeThemeColor(isDark, isSimulationMode);
+
+    // 3. Expose as CSS variable for Header and set on html/body for seamless overscroll
+    document.documentElement.style.setProperty('--topbar-bg', color);
     document.documentElement.style.backgroundColor = color;
     document.body.style.backgroundColor = color;
 
-    // Force iOS Safari to redraw status bar by recreating the theme-color meta element
+    // 4. Force iOS Safari to update status bar by recreating theme-color meta tag with the solid color
     document.querySelectorAll('meta[name="theme-color"]').forEach(el => el.remove());
     const newMeta = document.createElement('meta');
     newMeta.name = 'theme-color';
@@ -88,10 +88,10 @@ export function App() {
     newMeta.content = color;
     document.head.appendChild(newMeta);
 
-    // Update apple-mobile-web-app-status-bar-style for standalone mode
+    // 5. Update apple-mobile-web-app-status-bar-style for standalone PWA mode
     const appleStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
     if (appleStatusMeta) {
-      appleStatusMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
+      appleStatusMeta.setAttribute('content', isDarkText ? 'default' : 'black-translucent');
     }
   }, [isDark, isSimulationMode]);
 
