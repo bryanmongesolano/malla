@@ -416,7 +416,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           title={isZoomedIn ? "Mostrar toda la malla" : "Acercar vista"}
         >
           {isZoomedIn ? (
-            <Crosshair className="w-5 h-5 text-sky-500 dark:text-sky-400" />
+            <Crosshair className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           ) : (
             <ZoomIn className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           )}

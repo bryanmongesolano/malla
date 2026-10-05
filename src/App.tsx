@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { fetchState, updateProgress, updateSettings, type FullClientState } from './api.js';
 import { Header, type FilterMode } from './components/Header.js';
 import { CurriculumCanvas } from './components/CurriculumCanvas.js';
-import { SettingsDialog } from './components/SettingsDialog.js';
+import { SettingsBar } from './components/SettingsBar.js';
 import { AlertBanner } from './components/AlertBanner.js';
 import type { LayoutMode } from './layout.js';
 import type { StoredStatus, UserSettings } from '@shared/types.js';
@@ -238,15 +238,33 @@ export function App() {
       <Header
         overall={activeState.overall}
         simulation={activeState.simulation}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-      />
-
-      <AlertBanner
-        message={alertMsg}
-        onDismiss={() => setAlertMsg(null)}
+        isSettingsOpen={isSettingsOpen}
+        onToggleSettings={() => setIsSettingsOpen(prev => !prev)}
       />
 
       <main className="flex-1 w-full relative min-h-0 overflow-hidden">
+        {/* Floating overlays: SettingsBar and AlertBanner (float over canvas without pushing it down) */}
+        <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none flex flex-col">
+          {isSettingsOpen && (
+            <div className="pointer-events-auto">
+              <SettingsBar
+                coursesPerPeriod={activeState.settings.coursesPerPeriod}
+                isDark={isDark}
+                onToggleTheme={() => setIsDark(prev => !prev)}
+                onChangeCourses={handleSaveSettings}
+              />
+            </div>
+          )}
+          {alertMsg && (
+            <div className="pointer-events-auto">
+              <AlertBanner
+                message={alertMsg}
+                onDismiss={() => setAlertMsg(null)}
+              />
+            </div>
+          )}
+        </div>
+
         <CurriculumCanvas
           state={activeState}
           layoutMode={layoutMode}
@@ -261,17 +279,6 @@ export function App() {
           onShowAlert={msg => setAlertMsg(msg)}
         />
       </main>
-
-      {/* Settings Modal */}
-      {isSettingsOpen && (
-        <SettingsDialog
-          currentCoursesPerPeriod={activeState.settings.coursesPerPeriod}
-          isDark={isDark}
-          onToggleTheme={() => setIsDark(prev => !prev)}
-          onClose={() => setIsSettingsOpen(false)}
-          onSave={handleSaveSettings}
-        />
-      )}
     </div>
   );
 }

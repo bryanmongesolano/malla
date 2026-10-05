@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, X } from 'lucide-react';
 import type { OverallProgress, SimulationResult } from '@shared/types.js';
 
 export type FilterMode = 'todas' | 'disponibles' | 'suficiencia' | 'ocultar_completadas';
@@ -7,13 +7,15 @@ export type FilterMode = 'todas' | 'disponibles' | 'suficiencia' | 'ocultar_comp
 interface HeaderProps {
   overall: OverallProgress;
   simulation: SimulationResult;
-  onOpenSettings: () => void;
+  isSettingsOpen: boolean;
+  onToggleSettings: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   overall,
   simulation,
-  onOpenSettings
+  isSettingsOpen,
+  onToggleSettings
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2 sm:px-5 sm:py-2.5 transition-colors duration-200">
@@ -68,13 +70,17 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Settings icon only, vertically centered, no background */}
+        {/* Settings / Close icon only, vertically centered, no background */}
         <button
-          onClick={onOpenSettings}
+          onClick={onToggleSettings}
           className="min-w-[42px] min-h-[42px] flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer active:scale-95 shrink-0 self-center"
-          title="Ajustes"
+          title={isSettingsOpen ? 'Cerrar ajustes' : 'Ajustes'}
         >
-          <Settings className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+          {isSettingsOpen ? (
+            <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+          ) : (
+            <Settings className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+          )}
         </button>
       </div>
     </header>
