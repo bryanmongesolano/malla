@@ -136,7 +136,7 @@ export function App() {
     if (isSimulationMode && simulatedProgress) {
       const check = canTransition(itemId, newStatus, model, simulatedProgress);
       if (!check.allowed && newStatus !== 'bloqueada' && newStatus !== 'disponible') {
-        setToastMsg(check.reason || 'Transición no permitida');
+        setAlertMsg(check.reason || 'Transición no permitida');
         return;
       }
 
@@ -158,7 +158,7 @@ export function App() {
     } catch (err: any) {
       // Revert optimistic update
       setState(previousState);
-      setToastMsg(err.message || 'No se pudo actualizar el estado');
+      setAlertMsg(err.message || 'No se pudo actualizar el estado');
       throw err;
     }
   };
@@ -176,17 +176,9 @@ export function App() {
       const res = await updateSettings(coursesPerPeriod);
       setState(res.state);
     } catch (err: any) {
-      setToastMsg(err.message || 'No se pudo guardar la configuración');
+      setAlertMsg(err.message || 'No se pudo guardar la configuración');
     }
   };
-
-  // Toast auto-clear
-  useEffect(() => {
-    if (toastMsg) {
-      const t = setTimeout(() => setToastMsg(null), 5000);
-      return () => clearTimeout(t);
-    }
-  }, [toastMsg]);
 
   // Auto-blur buttons on touch/click to prevent sticky hover/focus background
   useEffect(() => {

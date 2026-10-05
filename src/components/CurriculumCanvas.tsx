@@ -6,7 +6,7 @@ import {
   useViewport,
   type NodeTypes
 } from '@xyflow/react';
-import type { StandardCourse, ElectiveBlock, CurriculumItem } from '@shared/types.js';
+import type { ElectiveBlock, CurriculumItem } from '@shared/types.js';
 import { CurriculumModel, isElectiveBlock, getCoursesUnlockedByCursando, arePrereqsMet, canTransition } from '@shared/index.js';
 import { getAllAncestors, getDirectDependents } from '@shared/graph.js';
 import { buildNodesAndEdges, type LayoutMode } from '../layout.js';
@@ -162,7 +162,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
 
   // Selected item and transition checks for the vertical action stack
   const selectedItem = useMemo(() => {
-    return selectedId ? model.getItem(selectedId) : null;
+    return selectedId ? (model.getItem(selectedId) ?? null) : null;
   }, [selectedId, model]);
 
   const isPrereqsMet = useMemo(() => {
