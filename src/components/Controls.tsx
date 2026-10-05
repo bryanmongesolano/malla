@@ -43,6 +43,7 @@ export interface CanvasControlsProps {
   onOpenElectiveSheet?: () => void;
   onShowAlert?: (msg: string) => void;
   onDeselect?: () => void;
+  onSelectNode?: (nodeId: string) => void;
   isSimulationMode: boolean;
   onStartSimulation: () => void;
   onExitSimulation: () => void;
@@ -50,6 +51,78 @@ export interface CanvasControlsProps {
   onSetFilterMode: (m: FilterMode) => void;
   layoutMode: LayoutMode;
   onSetLayoutMode: (m: LayoutMode) => void;
+}
+
+function findNextNodeInDirection(
+  currentNode: any,
+  allNodes: any[],
+  direction: 'arrowup' | 'arrowdown' | 'arrowleft' | 'arrowright',
+  getBounds: (nodes: any[]) => { x: number; y: number; width: number; height: number }
+): any | null {
+  const currentBounds = getBounds([currentNode]);
+  const cxA = currentBounds.x + currentBounds.width / 2;
+  const cyA = currentBounds.y + currentBounds.height / 2;
+
+  interface Candidate {
+    node: any;
+    primary: number;
+    secondary: number;
+    inCone: boolean;
+    score: number;
+  }
+
+  const candidates: Candidate[] = [];
+
+  for (const node of allNodes) {
+    if (node.id === currentNode.id) continue;
+    const bBounds = getBounds([node]);
+    const cxB = bBounds.x + bBounds.width / 2;
+    const cyB = bBounds.y + bBounds.height / 2;
+
+    const dx = cxB - cxA;
+    const dy = cyB - cyA;
+
+    let primary = 0;
+    let secondary = 0;
+
+    switch (direction) {
+      case 'arrowright':
+        primary = dx;
+        secondary = Math.abs(dy);
+        break;
+      case 'arrowleft':
+        primary = -dx;
+        secondary = Math.abs(dy);
+        break;
+      case 'arrowdown':
+        primary = dy;
+        secondary = Math.abs(dx);
+        break;
+      case 'arrowup':
+        primary = -dy;
+        secondary = Math.abs(dx);
+        break;
+    }
+
+    // Must be strictly in the positive direction along the primary axis
+    if (primary <= 5) continue;
+
+    // A candidate is in the forward cone if perpendicular deviation is within natural bounds
+    const inCone = secondary <= primary * 2.5;
+    // Score heavily weights perpendicular deviation so directly aligned nodes win
+    const score = primary + secondary * 2.5;
+
+    candidates.push({ node, primary, secondary, inCone, score });
+  }
+
+  if (candidates.length === 0) return null;
+
+  // Prefer candidates inside the forward cone
+  const coneCandidates = candidates.filter(c => c.inCone);
+  const pool = coneCandidates.length > 0 ? coneCandidates : candidates;
+
+  pool.sort((a, b) => a.score - b.score);
+  return pool[0]?.node ?? null;
 }
 
 export const CanvasControls: React.FC<CanvasControlsProps> = ({
@@ -61,6 +134,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
   onOpenElectiveSheet,
   onShowAlert,
   onDeselect,
+  onSelectNode,
   isSimulationMode,
   onStartSimulation,
   onExitSimulation,
@@ -279,6 +353,35 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           onDeselect?.();
           return;
         }
+      }
+
+      // Arrow keys spatial navigation between subjects
+      if (
+        key === 'arrowup' ||
+        key === 'arrowdown' ||
+        key === 'arrowleft' ||
+        key === 'arrowright'
+      ) {
+        if (!selectedItem || !onSelectNode) return;
+        e.preventDefault();
+
+        const nodes = getNodes().filter(n => !n.data?.isFiltered);
+        const currentNode = nodes.find(n => n.id === selectedItem.id);
+        if (!currentNode) return;
+
+        const nextNode = findNextNodeInDirection(currentNode, nodes, key, getNodesBounds);
+        if (nextNode) {
+          onSelectNode(nextNode.id);
+
+          // If currently zoomed in, maintain the new node centered
+          if (zoom > baselineFitZoom + 0.04) {
+            const nextBounds = getNodesBounds([nextNode]);
+            const targetX = nextBounds.x + nextBounds.width / 2;
+            const targetY = nextBounds.y + nextBounds.height / 2;
+            setCenter(targetX, targetY, { zoom, duration: 250 });
+          }
+        }
+        return;
       }
 
       // If a standard course is selected
