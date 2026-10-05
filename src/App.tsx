@@ -82,7 +82,16 @@ export function App() {
     document.documentElement.style.backgroundColor = topbarColor;
     document.body.style.backgroundColor = topbarColor;
 
-    // 3. Update the EXISTING theme-color meta tag (do NOT delete, Safari requires mutating existing element)
+    // 3. Update the dedicated fixed status bar element for iOS Safari live edge sampling
+    const statusBarTint = document.getElementById('ios-status-bar-tint');
+    if (statusBarTint) {
+      statusBarTint.style.backgroundColor = topbarColor;
+      statusBarTint.style.display = 'none';
+      void statusBarTint.offsetHeight;
+      statusBarTint.style.display = 'block';
+    }
+
+    // 4. Update the EXISTING theme-color meta tag (updates Safari bottom URL bar and Chrome/Android)
     const metaThemeColor = document.getElementById('theme-color-meta') || document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', topbarColor);

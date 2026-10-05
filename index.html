@@ -17,7 +17,7 @@
           var html = document.documentElement;
           var color;
           if (isSim) {
-            color = isDark ? '#332415' : '#f7e8cc';
+            color = isDark ? '#30211a' : '#f8e8d3';
           } else {
             color = isDark ? '#020617' : '#ffffff';
           }
@@ -28,8 +28,12 @@
             html.classList.remove('dark');
             html.style.colorScheme = 'light';
           }
-          html.style.backgroundColor = color;
           html.style.setProperty('--topbar-bg', color);
+          html.style.backgroundColor = color;
+          var tint = document.getElementById('ios-status-bar-tint');
+          if (tint) {
+            tint.style.backgroundColor = color;
+          }
           var meta = document.getElementById('theme-color-meta');
           if (meta) {
             meta.setAttribute('content', color);
@@ -39,19 +43,28 @@
     </script>
     <!-- Prevent bounce scroll on mobile canvas and match iOS status bar background -->
     <style>
+      :root {
+        --topbar-bg: #020617;
+      }
       html {
-        background-color: #ffffff;
+        background-color: var(--topbar-bg, #020617);
       }
       html.dark {
-        background-color: #020617;
+        background-color: var(--topbar-bg, #020617);
       }
       body {
-        background-color: #ffffff;
+        background-color: var(--topbar-bg, #020617);
       }
       html.dark body {
-        background-color: #020617;
+        background-color: var(--topbar-bg, #020617);
       }
-      html, body, #root {
+      html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #root {
         height: 100%;
         width: 100%;
         margin: 0;
@@ -61,6 +74,12 @@
     </style>
   </head>
   <body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white transition-colors duration-200">
+    <!-- Dedicated fixed element for iOS Safari Live Edge status bar sampling -->
+    <div
+      id="ios-status-bar-tint"
+      aria-hidden="true"
+      style="position: fixed; top: 0; left: 0; right: 0; width: 100%; height: max(4px, env(safe-area-inset-top, 4px)); min-height: 4px; background-color: var(--topbar-bg, #020617); pointer-events: none; z-index: 9999;"
+    ></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

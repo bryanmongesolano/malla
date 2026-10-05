@@ -56,9 +56,9 @@ export const Header: React.FC<HeaderProps> = ({
       className={`sticky top-0 z-40 w-full px-3.5 pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2 sm:px-5 sm:pt-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:pb-2.5 transition-colors duration-200 ${
         isSimulationMode
           ? 'border-b border-amber-500/50 dark:border-amber-500/40'
-          : 'bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80'
+          : 'border-b border-slate-200 dark:border-slate-800/80'
       }`}
-      style={isSimulationMode ? { backgroundColor: headerBgColor || 'var(--topbar-bg)' } : undefined}
+      style={{ backgroundColor: headerBgColor || 'var(--topbar-bg)' }}
     >
       <div className="flex items-center justify-between gap-5 sm:gap-7 max-w-7xl mx-auto">
         {/* Progress bar + metrics on left */}
