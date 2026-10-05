@@ -4,6 +4,7 @@ import {
   Background,
   BackgroundVariant,
   useViewport,
+  PanOnScrollMode,
   type NodeTypes
 } from '@xyflow/react';
 import type { ElectiveBlock, CurriculumItem } from '@shared/types.js';
@@ -388,9 +389,12 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         minZoom={0.15}
         maxZoom={2.5}
         zoomOnDoubleClick={false}
+        zoomOnScroll={false}
+        panOnScroll={true}
+        panOnScrollMode={PanOnScrollMode.Free}
+        panOnScrollSpeed={0.8}
         zoomOnPinch={true}
         panOnDrag={true}
-        panOnScroll={false}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
