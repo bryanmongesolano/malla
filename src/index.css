@@ -3,6 +3,27 @@
 @import "tailwindcss/utilities";
 @import "@xyflow/react/dist/style.css";
 
+/* Global touch highlight and outline reset */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus {
+  outline: none;
+}
+
+button:focus-visible {
+  outline: 2px solid #06b6d4;
+  outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  button {
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+}
+
 /* React Flow custom dark background and attribution styling */
 .react-flow__attribution {
   display: none !important;

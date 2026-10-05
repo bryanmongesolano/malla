@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -28,6 +28,11 @@ interface CurriculumCanvasProps {
   layoutMode: LayoutMode;
   filterMode: FilterMode;
   isDark: boolean;
+  isSimulationMode: boolean;
+  onStartSimulation: () => void;
+  onExitSimulation: () => void;
+  onSetFilterMode: (m: FilterMode) => void;
+  onSetLayoutMode: (m: LayoutMode) => void;
   onUpdateCourseStatus: (itemId: string, status: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia') => Promise<void>;
   onError: (msg: string) => void;
 }
@@ -37,6 +42,11 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
   layoutMode,
   filterMode,
   isDark,
+  isSimulationMode,
+  onStartSimulation,
+  onExitSimulation,
+  onSetFilterMode,
+  onSetLayoutMode,
   onUpdateCourseStatus,
   onError
 }) => {
@@ -71,9 +81,53 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     return getCoursesUnlockedByCursando(model, state.progress);
   }, [model, state.progress]);
 
-  // Handlers for nodes
-  const handleSelect = useCallback((id: string) => {
-    setSelectedId(prev => (prev === id ? null : id));
+  // Single-tap selection with double-tap cancellation (so double-tap zoom doesn't select/toggle node)
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastClickTimeRef = useRef<number>(0);
+  const lastClickNodeIdRef = useRef<string | null>(null);
+
+  const handleNodeClick = useCallback((_event: React.MouseEvent, node: { id: string }) => {
+    const now = Date.now();
+    const timeSinceLast = now - lastClickTimeRef.current;
+    const isQuickDoubleTap = timeSinceLast < 280 && lastClickNodeIdRef.current === node.id;
+
+    lastClickTimeRef.current = now;
+    lastClickNodeIdRef.current = node.id;
+
+    if (isQuickDoubleTap) {
+      // User is double-tapping on this course to zoom in.
+      // Cancel the pending single-tap selection!
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+      }
+      return;
+    }
+
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+    }
+
+    clickTimerRef.current = setTimeout(() => {
+      setSelectedId(prev => (prev === node.id ? null : node.id));
+      clickTimerRef.current = null;
+    }, 250);
+  }, []);
+
+  const handlePaneClick = useCallback(() => {
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+    setSelectedId(null);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+      }
+    };
   }, []);
 
   const handleOpenSelection = useCallback(() => {
@@ -282,8 +336,8 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         nodes={displayNodes}
         edges={displayEdges}
         nodeTypes={nodeTypes}
-        onNodeClick={(_event, node) => handleSelect(node.id)}
-        onPaneClick={() => setSelectedId(null)}
+        onNodeClick={handleNodeClick}
+        onPaneClick={handlePaneClick}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.2}
@@ -304,7 +358,17 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           size={1.2}
           color={isDark ? "#1e293b" : "#cbd5e1"}
         />
-        <CanvasControls hasSelection={!!selectedId} onEdit={handleOpenSelection} />
+        <CanvasControls
+          hasSelection={!!selectedId}
+          onEdit={handleOpenSelection}
+          isSimulationMode={isSimulationMode}
+          onStartSimulation={onStartSimulation}
+          onExitSimulation={onExitSimulation}
+          filterMode={filterMode}
+          onSetFilterMode={onSetFilterMode}
+          layoutMode={layoutMode}
+          onSetLayoutMode={onSetLayoutMode}
+        />
         <CanvasGestures />
       </ReactFlow>
 
