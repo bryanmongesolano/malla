@@ -406,6 +406,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           onActionStatus={handleActionStatus}
           onOpenElectiveSheet={handleOpenElectiveSheet}
           onShowAlert={onShowAlert}
+          onDeselect={() => setSelectedId(null)}
           isSimulationMode={isSimulationMode}
           onStartSimulation={onStartSimulation}
           onExitSimulation={onExitSimulation}

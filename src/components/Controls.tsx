@@ -41,6 +41,7 @@ export interface CanvasControlsProps {
   onActionStatus?: (target: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia') => void;
   onOpenElectiveSheet?: () => void;
   onShowAlert?: (msg: string) => void;
+  onDeselect?: () => void;
   isSimulationMode: boolean;
   onStartSimulation: () => void;
   onExitSimulation: () => void;
@@ -58,6 +59,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
   onActionStatus,
   onOpenElectiveSheet,
   onShowAlert,
+  onDeselect,
   isSimulationMode,
   onStartSimulation,
   onExitSimulation,
@@ -190,6 +192,165 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
 
   const baseStatus = isPrereqsMet ? 'disponible' : 'bloqueada';
 
+  // Keyboard shortcuts listener for rapid desktop navigation & course status changes
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if modifier keys are pressed (Cmd+C, Ctrl+C, etc.)
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      // Don't intercept if an input/textarea/select is focused
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
+          (activeEl as HTMLElement).isContentEditable)
+      ) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      // Escape: close filter menu or deselect item
+      if (key === 'escape') {
+        if (filterMenuOpen) {
+          setFilterMenuOpen(false);
+          return;
+        }
+        if (selectedItem) {
+          onDeselect?.();
+          return;
+        }
+      }
+
+      // If a standard course is selected
+      if (selectedItem && !isElectiveBlock(selectedItem)) {
+        if (key === 'c' || key === '4') {
+          e.preventDefault();
+          if (selectedStatus === 'completada') {
+            if (!transitions?.base.allowed) {
+              onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar completada.');
+              return;
+            }
+            onActionStatus?.(baseStatus);
+          } else {
+            if (!transitions?.completada.allowed) {
+              onShowAlert?.(transitions?.completada.reason || 'No se puede marcar completada.');
+              return;
+            }
+            onActionStatus?.('completada');
+          }
+          return;
+        }
+
+        if (key === 'p' || key === '3') {
+          e.preventDefault();
+          if (selectedStatus === 'cursando') {
+            if (!transitions?.base.allowed) {
+              onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar cursando.');
+              return;
+            }
+            onActionStatus?.(baseStatus);
+          } else {
+            if (!transitions?.cursando.allowed) {
+              onShowAlert?.(transitions?.cursando.reason || 'No se puede marcar cursando.');
+              return;
+            }
+            onActionStatus?.('cursando');
+          }
+          return;
+        }
+
+        if (key === 's' || key === '2') {
+          e.preventDefault();
+          if (selectedStatus === 'suficiencia') {
+            if (!transitions?.base.allowed) {
+              onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar suficiencia.');
+              return;
+            }
+            onActionStatus?.(baseStatus);
+          } else {
+            if (!transitions?.suficiencia.allowed) {
+              onShowAlert?.(transitions?.suficiencia.reason || 'No se puede marcar suficiencia.');
+              return;
+            }
+            onActionStatus?.('suficiencia');
+          }
+          return;
+        }
+
+        if (key === 'd' || key === '1') {
+          e.preventDefault();
+          if (selectedStatus === baseStatus) return;
+          if (!transitions?.base.allowed) {
+            onShowAlert?.(transitions?.base.reason || 'No se puede cambiar a este estado.');
+            return;
+          }
+          onActionStatus?.(baseStatus);
+          return;
+        }
+      }
+
+      // If an elective block is selected
+      if (selectedItem && isElectiveBlock(selectedItem)) {
+        if (key === 'e' || key === 'enter' || key === ' ') {
+          e.preventDefault();
+          onOpenElectiveSheet?.();
+          return;
+        }
+      }
+
+      // Global canvas controls
+      if (key === 'z') {
+        e.preventDefault();
+        handleToggleView();
+        return;
+      }
+
+      if (key === 'l') {
+        e.preventDefault();
+        onSetLayoutMode(layoutMode === 'tree' ? 'horizontal' : 'tree');
+        return;
+      }
+
+      if (key === 'f') {
+        e.preventDefault();
+        setFilterMenuOpen(prev => !prev);
+        return;
+      }
+
+      if (key === 'm') {
+        e.preventDefault();
+        if (isSimulationMode) {
+          onExitSimulation();
+        } else {
+          onStartSimulation();
+        }
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    selectedItem,
+    selectedStatus,
+    baseStatus,
+    transitions,
+    onActionStatus,
+    onShowAlert,
+    onDeselect,
+    onOpenElectiveSheet,
+    handleToggleView,
+    filterMenuOpen,
+    layoutMode,
+    onSetLayoutMode,
+    isSimulationMode,
+    onStartSimulation,
+    onExitSimulation
+  ]);
+
   return (
     <>
       {/* Left Cluster: Simular, Filtrar, Vista */}
@@ -199,7 +360,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           <button
             onClick={onStartSimulation}
             className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
-            title="Simular avance (Sandbox)"
+            title="Simular avance (M)"
           >
             <FlaskConical className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           </button>
@@ -207,7 +368,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           <button
             onClick={onExitSimulation}
             className="h-12 min-h-[48px] px-3.5 rounded-2xl border border-amber-500/70 bg-amber-500/20 text-amber-700 dark:text-amber-300 shadow-xl backdrop-blur-md flex items-center gap-2 transition-all cursor-pointer active:scale-95 ring-1 ring-amber-500/40"
-            title="Volver al avance real"
+            title="Volver al avance real (M)"
           >
             <Undo2 className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
             <span className="text-xs sm:text-sm font-semibold">Volver</span>
@@ -223,7 +384,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                 ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border-cyan-500/70 ring-1 ring-cyan-500/40'
                 : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-300'
             }`}
-            title="Filtrar materias"
+            title="Filtrar materias (F)"
           >
             <Filter className="w-5 h-5" />
           </button>
@@ -263,7 +424,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
         <button
           onClick={() => onSetLayoutMode(layoutMode === 'tree' ? 'horizontal' : 'tree')}
           className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
-          title={layoutMode === 'tree' ? 'Cambiar a vista Horizontal' : 'Cambiar a vista Árbol'}
+          title={layoutMode === 'tree' ? 'Cambiar a vista Horizontal (L)' : 'Cambiar a vista Árbol (L)'}
         >
           {layoutMode === 'tree' ? (
             <GitFork className="w-5 h-5 text-slate-600 dark:text-slate-300" />
@@ -280,7 +441,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           <button
             onClick={onOpenElectiveSheet}
             className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/60 rounded-2xl shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ring-1 ring-purple-500/30 animate-in fade-in zoom-in-95 duration-200"
-            title="Elegir materia optativa"
+            title="Elegir materia optativa (E)"
           >
             <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </button>
@@ -308,7 +469,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                   ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
                   : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
               }`}
-              title={isPrereqsMet ? 'Disponible' : 'Bloqueada'}
+              title={isPrereqsMet ? 'Disponible (D)' : 'Bloqueada (D)'}
             >
               {isPrereqsMet ? (
                 <Clock className="w-5 h-5 text-sky-500 dark:text-sky-400" />
@@ -342,7 +503,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                   ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
                   : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
               }`}
-              title="Suficiencia"
+              title="Suficiencia (S)"
             >
               <GraduationCap className="w-5 h-5 text-purple-500 dark:text-purple-400" />
             </button>
@@ -372,7 +533,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                   ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
                   : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
               }`}
-              title="Cursando"
+              title="Cursando (P)"
             >
               <Play className="w-5 h-5 text-amber-500 dark:text-amber-400 fill-amber-500/20" />
             </button>
@@ -402,7 +563,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                   ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
                   : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
               }`}
-              title="Completada"
+              title="Completada (C)"
             >
               <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 stroke-[2.5]" />
             </button>
@@ -413,7 +574,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
         <button
           onClick={handleToggleView}
           className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
-          title={isZoomedIn ? "Mostrar toda la malla" : "Acercar vista"}
+          title={isZoomedIn ? "Mostrar toda la malla (Z)" : "Acercar vista (Z)"}
         >
           {isZoomedIn ? (
             <Crosshair className="w-5 h-5 text-slate-600 dark:text-slate-300" />
