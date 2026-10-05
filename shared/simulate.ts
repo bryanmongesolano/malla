@@ -214,6 +214,7 @@ export function simulateGraduation(
     return true;
   };
 
+  const alreadyCompleted = isEverythingCompleted();
   const maxSafetyIterations = 30; // maximum 10 years of simulation
   let iteration = 0;
 
@@ -252,7 +253,7 @@ export function simulateGraduation(
 
   const lastPeriod = periods.length > 0 ? currentPeriod : getCurrentPeriodInfo(currentDate);
   const estimatedGraduationDate = getPeriodEndLabel(lastPeriod);
-  const remainingTime = isEverythingCompleted()
+  const remainingTime = (alreadyCompleted || periods.length === 0)
     ? 'completado'
     : getRemainingTimeText(estimatedGraduationDate, currentDate);
 
@@ -287,6 +288,7 @@ export function getRemainingTimeText(
     jul: 6,
     ago: 7,
     sep: 8,
+    set: 8,
     oct: 9,
     nov: 10,
     dic: 11

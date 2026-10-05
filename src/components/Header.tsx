@@ -43,10 +43,12 @@ export const Header: React.FC<HeaderProps> = ({
   const isCompleted = overall.percentCompleted === 100;
   const remainingText = isCompleted
     ? 'completado'
-    : (simulation.remainingTime || getRemainingTimeText(simulation.estimatedGraduationDate));
+    : ((simulation.remainingTime && simulation.remainingTime !== 'completado')
+        ? simulation.remainingTime
+        : getRemainingTimeText(simulation.estimatedGraduationDate));
   const displayText = showRemainingTime
     ? remainingText
-    : simulation.estimatedGraduationDate?.toLowerCase();
+    : (simulation.estimatedGraduationDate?.toLowerCase() || remainingText);
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2 sm:px-5 sm:py-2.5 transition-colors duration-200">
       <div className="flex items-center justify-between gap-5 sm:gap-7 max-w-7xl mx-auto">

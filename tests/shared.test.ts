@@ -12,7 +12,8 @@ import {
   getAllAncestors,
   getDirectDependents,
   getAllDependents,
-  getCoursesUnlockedByCursando
+  getCoursesUnlockedByCursando,
+  isElectiveBlock
 } from '../shared/index.js';
 import type { Curriculum, StoredStatus } from '../shared/types.js';
 
@@ -283,10 +284,26 @@ describe('Graduation Simulator', () => {
     // Same month / already reached
     expect(getRemainingTimeText('oct 2026', refDate)).toBe('este mes');
 
-    // Simulation result includes remainingTime property
+    // Simulation result includes remainingTime property and is not prematurely marked completado
     const sim = simulateGraduation(model, {}, 4, refDate);
     expect(sim.remainingTime).toBeDefined();
-    expect(typeof sim.remainingTime).toBe('string');
+    expect(sim.remainingTime).not.toBe('completado');
+    expect(sim.remainingTime).toMatch(/(\d+ mes(es)?( y \d+ año(s)?)?|\d+ año(s)?)/);
+
+    // Full completion returns completado
+    const allProgress: Record<string, StoredStatus> = {};
+    for (const item of model.getAllItems()) {
+      if (isElectiveBlock(item)) {
+        for (const opt of item.options) {
+          allProgress[opt.id] = 'completada';
+        }
+      } else {
+        allProgress[item.id] = 'completada';
+      }
+    }
+    const completedSim = simulateGraduation(model, allProgress, 4, refDate);
+    expect(completedSim.periodsRemaining).toBe(0);
+    expect(completedSim.remainingTime).toBe('completado');
   });
 });
 
