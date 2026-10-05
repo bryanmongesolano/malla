@@ -86,69 +86,66 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2 sm:px-5 sm:py-2.5 transition-colors duration-200">
       <div className="flex flex-col gap-2 max-w-7xl mx-auto">
-        {/* Row 1: Title with progress bar extending underneath, meeting the borderless Settings icon */}
+        {/* Progress bar + metrics on left, Settings button centered vertically on right */}
         <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 flex flex-col gap-1 min-w-0">
-            <span className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100 tracking-tight truncate">
-              Ingeniería del Software
-            </span>
-            {/* Progress bar directly beneath title extending to settings button */}
+          <div className="flex-1 flex flex-col justify-center gap-1.5 min-w-0">
+            {/* Progress bar */}
             <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 transition-all duration-500 rounded-full"
                 style={{ width: `${overall.percentCompleted}%` }}
               />
             </div>
+
+            {/* Directly underneath: Date on left, data & green % on right */}
+            <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
+              {/* Left: Graduation date (only icon, month and year) */}
+              <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
+                <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                <span>{simulation.estimatedGraduationDate}</span>
+              </div>
+
+              {/* Right: Subtle dots + numbers, ending with percentage in green */}
+              <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Completadas">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                  <span>{overall.completedUnits}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Cursando">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                  <span>{overall.cursandoUnits}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Disponibles">
+                  <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
+                  <span>{overall.availableUnits}</span>
+                </span>
+                {overall.suficienciaUnits > 0 && (
+                  <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Suficiencia">
+                    <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                    <span>{overall.suficienciaUnits}</span>
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Bloqueadas">
+                  <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 shrink-0" />
+                  <span>{overall.blockedUnits}</span>
+                </span>
+
+                {/* Percentage in progress bar green */}
+                <span className="text-xs font-mono font-bold text-emerald-500 dark:text-emerald-400 ml-1">
+                  {overall.percentCompleted}%
+                </span>
+              </div>
+            </div>
           </div>
 
-          {/* Settings icon only (borderless, backgroundless) */}
+          {/* Settings icon only, vertically centered */}
           <button
             onClick={onOpenSettings}
-            className="min-w-[42px] min-h-[42px] flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer active:scale-95 shrink-0"
+            className="min-w-[42px] min-h-[42px] flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer active:scale-95 shrink-0 self-center"
             title="Ajustes"
           >
             <Settings className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           </button>
-        </div>
-
-        {/* Row 2: Date on left (icon, month and year only), data and green % on right */}
-        <div className="flex items-center justify-between gap-2 text-xs pt-1 border-t border-slate-100 dark:border-slate-900/60 flex-wrap">
-          {/* Left: Graduation date (only icon, month and year) */}
-          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
-            <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-            <span>{simulation.estimatedGraduationDate}</span>
-          </div>
-
-          {/* Right: Subtle dots + numbers, ending with percentage in green */}
-          <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
-            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Completadas">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-              <span>{overall.completedUnits}</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Cursando">
-              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-              <span>{overall.cursandoUnits}</span>
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Disponibles">
-              <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
-              <span>{overall.availableUnits}</span>
-            </span>
-            {overall.suficienciaUnits > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Suficiencia">
-                <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
-                <span>{overall.suficienciaUnits}</span>
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Bloqueadas">
-              <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 shrink-0" />
-              <span>{overall.blockedUnits}</span>
-            </span>
-
-            {/* Percentage in progress bar green */}
-            <span className="text-xs font-mono font-bold text-emerald-500 dark:text-emerald-400 ml-1">
-              {overall.percentCompleted}%
-            </span>
-          </div>
         </div>
 
         {/* Row 3: Action Toolbar (Simulate on left, Filter & View on right with slate icon color) */}
