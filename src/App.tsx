@@ -60,6 +60,8 @@ export function App() {
   });
 
   useEffect(() => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    const color = isDark ? '#020617' : '#ffffff';
     if (isDark) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('malla_theme', 'dark');
@@ -67,6 +69,10 @@ export function App() {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('malla_theme', 'light');
     }
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', color);
+    }
+    document.documentElement.style.backgroundColor = color;
   }, [isDark]);
 
   const loadData = useCallback(async (showLoader = false) => {

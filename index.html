@@ -4,10 +4,41 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#090d16" />
+    <meta name="theme-color" content="#020617" id="theme-color-meta" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Malla Curricular — CENFOTEC</title>
-    <!-- Prevent bounce scroll on mobile canvas -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('malla_theme');
+          var isDark = saved ? saved === 'dark' : true;
+          var html = document.documentElement;
+          var meta = document.getElementById('theme-color-meta');
+          if (isDark) {
+            html.classList.add('dark');
+            if (meta) meta.setAttribute('content', '#020617');
+          } else {
+            html.classList.remove('dark');
+            if (meta) meta.setAttribute('content', '#ffffff');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <!-- Prevent bounce scroll on mobile canvas and match iOS status bar background -->
     <style>
+      html {
+        background-color: #ffffff;
+      }
+      html.dark {
+        background-color: #020617;
+      }
+      body {
+        background-color: #ffffff;
+      }
+      html.dark body {
+        background-color: #020617;
+      }
       html, body, #root {
         height: 100%;
         width: 100%;

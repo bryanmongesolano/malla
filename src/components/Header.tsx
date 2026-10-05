@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
     ? remainingText
     : (simulation.estimatedGraduationDate?.toLowerCase() || remainingText);
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2 sm:px-5 sm:py-2.5 transition-colors duration-200">
+    <header className="sticky top-0 z-40 w-full bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 px-3.5 pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2 sm:px-5 sm:pt-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:pb-2.5 transition-colors duration-200">
       <div className="flex items-center justify-between gap-5 sm:gap-7 max-w-7xl mx-auto">
         {/* Progress bar + metrics on left */}
         <div className="flex-1 flex flex-col justify-center gap-2 min-w-0">
