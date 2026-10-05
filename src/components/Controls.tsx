@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useReactFlow, useViewport, useNodesInitialized, getViewportForBounds } from '@xyflow/react';
 import {
   Crosshair,
@@ -70,7 +70,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
   onSetLayoutMode
 }) => {
   const { fitView, getNodes, getNodesBounds, setCenter } = useReactFlow();
-  const { zoom } = useViewport();
+  const { zoom, x, y } = useViewport();
   const nodesInitialized = useNodesInitialized();
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -135,6 +135,32 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
   // Reactive zoom state: any manual or automated zoom above baseline flips to "volver a estado normal"
   const isZoomedIn = zoom > baselineFitZoom + 0.04;
 
+  // Check if camera is currently focused on the selected node
+  const isFocusedOnSelected = useMemo(() => {
+    if (!selectedItem) return false;
+    const nodes = getNodes();
+    const selectedNode = nodes.find(n => n.id === selectedItem.id);
+    if (!selectedNode) return false;
+
+    const container = document.querySelector('.react-flow');
+    const rect = container?.getBoundingClientRect();
+    if (!rect || !rect.width || !rect.height) return false;
+
+    if (zoom <= baselineFitZoom + 0.1) return false;
+
+    const nodeBounds = getNodesBounds([selectedNode]);
+    const targetX = nodeBounds.x + nodeBounds.width / 2;
+    const targetY = nodeBounds.y + nodeBounds.height / 2;
+
+    const currentCenterX = (-x + rect.width / 2) / zoom;
+    const currentCenterY = (-y + rect.height / 2) / zoom;
+    const dist = Math.hypot(currentCenterX - targetX, currentCenterY - targetY);
+
+    return dist < 140;
+  }, [selectedItem, getNodes, getNodesBounds, x, y, zoom, baselineFitZoom]);
+
+  const isResetMode = selectedItem ? isFocusedOnSelected : isZoomedIn;
+
   const handleToggleView = () => {
     const nodes = getNodes();
     if (!nodes || nodes.length === 0) {
@@ -144,6 +170,36 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
 
     const currentBaseline = calculateBaselineZoom();
     setBaselineFitZoom(currentBaseline);
+
+    const selectedNode = selectedItem ? (nodes.find(n => n.id === selectedItem.id) ?? null) : null;
+
+    if (selectedNode) {
+      const container = document.querySelector('.react-flow');
+      const rect = container?.getBoundingClientRect();
+      const nodeBounds = getNodesBounds([selectedNode]);
+      const targetX = nodeBounds.x + nodeBounds.width / 2;
+      const targetY = nodeBounds.y + nodeBounds.height / 2;
+
+      let alreadyFocused = false;
+      if (rect && rect.width && rect.height && zoom > currentBaseline + 0.1) {
+        const currentCenterX = (-x + rect.width / 2) / zoom;
+        const currentCenterY = (-y + rect.height / 2) / zoom;
+        const dist = Math.hypot(currentCenterX - targetX, currentCenterY - targetY);
+        if (dist < 140) {
+          alreadyFocused = true;
+        }
+      }
+
+      if (alreadyFocused) {
+        // Return to complete normal overview
+        fitView({ padding: 0.18, duration: 400 });
+      } else {
+        // Zoom in focused onto the selected subject
+        const targetZoom = Math.min(Math.max(currentBaseline * 2.5, 0.82), 1.05);
+        setCenter(targetX, targetY, { zoom: targetZoom, duration: 400 });
+      }
+      return;
+    }
 
     if (zoom > currentBaseline + 0.04) {
       // Zoomed in -> return to complete normal overview
@@ -601,7 +657,13 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
 
         {/* 5. Zoom / Reset View Toggle Button (Reactive) */}
         <ActionTooltip
-          label={isZoomedIn ? "Mostrar toda la malla" : "Acercar vista"}
+          label={
+            isResetMode
+              ? "Mostrar toda la malla"
+              : selectedItem
+              ? "Acercar a la materia seleccionada"
+              : "Acercar vista"
+          }
           shortcut="Z"
           side="left"
         >
@@ -609,7 +671,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
             onClick={handleToggleView}
             className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
           >
-            {isZoomedIn ? (
+            {isResetMode ? (
               <Crosshair className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             ) : (
               <ZoomIn className="w-5 h-5 text-slate-600 dark:text-slate-300" />
