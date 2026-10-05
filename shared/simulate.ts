@@ -252,11 +252,67 @@ export function simulateGraduation(
 
   const lastPeriod = periods.length > 0 ? currentPeriod : getCurrentPeriodInfo(currentDate);
   const estimatedGraduationDate = getPeriodEndLabel(lastPeriod);
+  const remainingTime = isEverythingCompleted()
+    ? 'completado'
+    : getRemainingTimeText(estimatedGraduationDate, currentDate);
 
   return {
     periodsRemaining: periods.length,
     estimatedGraduationDate,
+    remainingTime,
     periods,
     criticalPath: criticalPathItems
   };
+}
+
+export function getRemainingTimeText(
+  estimatedGraduationDate?: string,
+  referenceDate: Date = new Date()
+): string {
+  if (!estimatedGraduationDate) return '';
+
+  const match = estimatedGraduationDate.match(/([a-zA-Záéíóúñ]+)\s*(\d{4})/i);
+  if (!match) return estimatedGraduationDate;
+
+  const monthStr = match[1].toLowerCase().slice(0, 3);
+  const targetYear = parseInt(match[2], 10);
+
+  const monthMap: Record<string, number> = {
+    ene: 0,
+    feb: 1,
+    mar: 2,
+    abr: 3,
+    may: 4,
+    jun: 5,
+    jul: 6,
+    ago: 7,
+    sep: 8,
+    oct: 9,
+    nov: 10,
+    dic: 11
+  };
+
+  const targetMonth = monthMap[monthStr] ?? 11;
+  const currentYear = referenceDate.getFullYear();
+  const currentMonth = referenceDate.getMonth();
+
+  const totalMonths = (targetYear - currentYear) * 12 + (targetMonth - currentMonth);
+
+  if (totalMonths <= 0) {
+    return 'este mes';
+  }
+
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+
+  const yearPart = years === 1 ? '1 año' : `${years} años`;
+  const monthPart = months === 1 ? '1 mes' : `${months} meses`;
+
+  if (years > 0 && months > 0) {
+    return `${monthPart} y ${yearPart}`;
+  }
+  if (years > 0) {
+    return yearPart;
+  }
+  return monthPart;
 }

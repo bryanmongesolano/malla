@@ -68,6 +68,7 @@ export interface SimulationPeriod {
 export interface SimulationResult {
   periodsRemaining: number;
   estimatedGraduationDate: string; // e.g. "Dic 2028"
+  remainingTime?: string; // e.g. "2 meses y 1 año"
   periods: SimulationPeriod[];
   criticalPath: string[];
 }

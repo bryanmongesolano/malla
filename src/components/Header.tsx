@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Settings, X } from 'lucide-react';
 import type { OverallProgress, SimulationResult } from '@shared/types.js';
+import { getRemainingTimeText } from '@shared/index.js';
 
 export type FilterMode = 'todas' | 'disponibles' | 'suficiencia' | 'ocultar_completadas';
 
@@ -17,6 +18,33 @@ export const Header: React.FC<HeaderProps> = ({
   isSettingsOpen,
   onToggleSettings
 }) => {
+  const [showRemainingTime, setShowRemainingTime] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('malla_date_display') === 'remaining';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleDateDisplay = () => {
+    setShowRemainingTime(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('malla_date_display', next ? 'remaining' : 'date');
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const isCompleted = overall.percentCompleted === 100;
+  const remainingText = isCompleted
+    ? 'completado'
+    : (simulation.remainingTime || getRemainingTimeText(simulation.estimatedGraduationDate));
+  const displayText = showRemainingTime
+    ? remainingText
+    : simulation.estimatedGraduationDate?.toLowerCase();
   return (
     <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2 sm:px-5 sm:py-2.5 transition-colors duration-200">
       <div className="flex items-center justify-between gap-5 sm:gap-7 max-w-7xl mx-auto">
@@ -63,9 +91,14 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-xs font-mono font-bold text-emerald-500 dark:text-emerald-400">
                 {overall.percentCompleted}%
               </span>
-              <span className="text-slate-600 dark:text-slate-400">
-                {simulation.estimatedGraduationDate?.toLowerCase()}
-              </span>
+              <button
+                type="button"
+                onClick={handleToggleDateDisplay}
+                className="min-h-[36px] -my-1.5 px-1.5 -mx-1.5 inline-flex items-center text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer select-none active:scale-95"
+                title={showRemainingTime ? 'Mostrar fecha estimada' : 'Mostrar tiempo restante'}
+              >
+                {displayText}
+              </button>
             </div>
           </div>
         </div>

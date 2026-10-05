@@ -7,6 +7,7 @@ import {
   computeDependencyLevels,
   canTransition,
   simulateGraduation,
+  getRemainingTimeText,
   getDirectPrereqs,
   getAllAncestors,
   getDirectDependents,
@@ -253,4 +254,39 @@ describe('Graduation Simulator', () => {
     // It CAN be reverted back to bloqueada
     expect(canTransition('SOFT-02', 'bloqueada', model, progressWithBlockedSuficiencia).allowed).toBe(true);
   });
+
+  it('correctly calculates remaining months and years for graduation', () => {
+    // Current date: 5 Oct 2026 (Month index 9)
+    const refDate = new Date(2026, 9, 5);
+
+    // 1 mes y 2 años: from Nov 2026 to Dec 2028 is 25 months (2 yrs 1 mo)
+    const refNov2026 = new Date(2026, 10, 15);
+    expect(getRemainingTimeText('dic 2028', refNov2026)).toBe('1 mes y 2 años');
+
+    // 2 meses y 1 año: from Oct 2026 to Dec 2027 is 14 months (1 yr 2 mo)
+    expect(getRemainingTimeText('dic 2027', refDate)).toBe('2 meses y 1 año');
+
+    // 3 años: from Oct 2026 to Oct 2029 is 36 months (3 yrs 0 mo)
+    const refDec2026 = new Date(2026, 11, 1);
+    expect(getRemainingTimeText('dic 2029', refDec2026)).toBe('3 años');
+
+    // Single year
+    expect(getRemainingTimeText('dic 2027', refDec2026)).toBe('1 año');
+
+    // Single month
+    const refNov = new Date(2026, 10, 1);
+    expect(getRemainingTimeText('dic 2026', refNov)).toBe('1 mes');
+
+    // Plural months under a year: from Oct 2026 to Dec 2026 is 2 months
+    expect(getRemainingTimeText('dic 2026', refDate)).toBe('2 meses');
+
+    // Same month / already reached
+    expect(getRemainingTimeText('oct 2026', refDate)).toBe('este mes');
+
+    // Simulation result includes remainingTime property
+    const sim = simulateGraduation(model, {}, 4, refDate);
+    expect(sim.remainingTime).toBeDefined();
+    expect(typeof sim.remainingTime).toBe('string');
+  });
 });
+
