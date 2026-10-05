@@ -314,6 +314,23 @@ export function App() {
 
   return (
     <div className="w-full h-[100dvh] max-h-[100dvh] flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden font-sans">
+      {/* Dedicated fixed element for iOS Safari Live Edge status bar sampling */}
+      <div
+        id="ios-status-bar-tint"
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          width: '100%',
+          height: 'max(4px, env(safe-area-inset-top, 4px))',
+          minHeight: '4px',
+          backgroundColor: topbarColor,
+          pointerEvents: 'none',
+          zIndex: 9999
+        }}
+      />
       <Header
         overall={activeState.overall}
         simulation={activeState.simulation}

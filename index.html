@@ -74,12 +74,6 @@
     </style>
   </head>
   <body class="text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white">
-    <!-- Dedicated fixed element for iOS Safari Live Edge status bar sampling -->
-    <div
-      id="ios-status-bar-tint"
-      aria-hidden="true"
-      style="position: fixed; top: 0; left: 0; right: 0; width: 100%; height: max(4px, env(safe-area-inset-top, 4px)); min-height: 4px; background-color: var(--topbar-bg, #020617); pointer-events: none; z-index: 9999;"
-    ></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
