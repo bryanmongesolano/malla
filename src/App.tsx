@@ -13,7 +13,12 @@ import {
   simulateGraduation,
   canTransition
 } from '@shared/index.js';
-import { computeThemeColor } from './themeColor.js';
+import {
+  computeThemeColor,
+  getCanvasBgColor,
+  isMobileDevice,
+  updateDocumentTheme
+} from './themeColor.js';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 export function App() {
@@ -65,38 +70,13 @@ export function App() {
     return computeThemeColor(isDark, isSimulationMode).color;
   }, [isDark, isSimulationMode]);
 
+  const isMobile = useMemo(() => isMobileDevice(), []);
+  const baseSurfaceColor = isDark ? '#020617' : '#ffffff';
+  const canvasBgColor = useMemo(() => getCanvasBgColor(isDark), [isDark]);
+
   useLayoutEffect(() => {
-    // 1. Toggle dark class first so DOM styles reflect the active theme
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
-      localStorage.setItem('malla_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
-      localStorage.setItem('malla_theme', 'light');
-    }
-
-    // 2. Set on html/body and CSS variable synchronously BEFORE paint
-    document.documentElement.style.setProperty('--topbar-bg', topbarColor);
-    document.documentElement.style.backgroundColor = topbarColor;
-    document.body.style.backgroundColor = topbarColor;
-
-    // 3. Update the dedicated fixed status bar element for iOS Safari live edge sampling
-    const statusBarTint = document.getElementById('ios-status-bar-tint');
-    if (statusBarTint) {
-      statusBarTint.style.backgroundColor = topbarColor;
-    }
-
-    // 4. Update the theme-color meta tag synchronously BEFORE paint (updates Safari URL bar and Android/Chrome)
-    const metaThemeColor = document.getElementById('theme-color-meta') || document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', topbarColor);
-    }
-
-    // 5. Force layout flush so WebKit computes styles immediately before composite
-    void document.body.offsetHeight;
-  }, [isDark, topbarColor]);
+    updateDocumentTheme(isDark, topbarColor, baseSurfaceColor, canvasBgColor, isMobile);
+  }, [isDark, topbarColor, baseSurfaceColor, canvasBgColor, isMobile]);
 
   const loadData = useCallback(async (showLoader = false) => {
     if (showLoader) setLoading(true);

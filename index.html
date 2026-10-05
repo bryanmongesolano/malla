@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" id="meta-color-scheme" />
     <meta name="theme-color" content="#020617" id="theme-color-meta" />
+    <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)" id="theme-color-dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" id="theme-color-light" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Malla Curricular — CENFOTEC</title>
@@ -14,13 +17,18 @@
           var saved = localStorage.getItem('malla_theme');
           var isDark = saved ? saved === 'dark' : true;
           var isSim = sessionStorage.getItem('malla_simulation_active') === 'true';
+          var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+            (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent));
           var html = document.documentElement;
-          var color;
+          var topbarColor;
           if (isSim) {
-            color = isDark ? '#30211a' : '#f8e8d3';
+            topbarColor = isDark ? '#30211a' : '#fdecce';
           } else {
-            color = isDark ? '#020617' : '#ffffff';
+            topbarColor = isDark ? '#020617' : '#ffffff';
           }
+          var baseSurfaceColor = isDark ? '#020617' : '#ffffff';
+          var canvasBgColor = isDark ? '#020617' : '#f1f5f9';
+
           if (isDark) {
             html.classList.add('dark');
             html.style.colorScheme = 'dark';
@@ -28,16 +36,26 @@
             html.classList.remove('dark');
             html.style.colorScheme = 'light';
           }
-          html.style.setProperty('--topbar-bg', color);
-          html.style.backgroundColor = color;
-          var tint = document.getElementById('ios-status-bar-tint');
-          if (tint) {
-            tint.style.backgroundColor = color;
+
+          html.style.setProperty('--topbar-bg', topbarColor);
+          html.style.setProperty('--canvas-bg', canvasBgColor);
+          html.style.backgroundColor = topbarColor;
+
+          var metaScheme = document.getElementById('meta-color-scheme');
+          if (metaScheme) {
+            metaScheme.setAttribute('content', isDark ? 'dark' : 'light');
           }
-          var meta = document.getElementById('theme-color-meta');
-          if (meta) {
-            meta.setAttribute('content', color);
-          }
+
+          var metaColor = isMobile ? baseSurfaceColor : topbarColor;
+
+          var metaDefault = document.getElementById('theme-color-meta');
+          if (metaDefault) metaDefault.setAttribute('content', metaColor);
+
+          var metaLight = document.getElementById('theme-color-light');
+          if (metaLight) metaLight.setAttribute('content', metaColor);
+
+          var metaDark = document.getElementById('theme-color-dark');
+          if (metaDark) metaDark.setAttribute('content', metaColor);
         } catch (e) {}
       })();
     </script>
@@ -45,18 +63,13 @@
     <style>
       :root {
         --topbar-bg: #020617;
+        --canvas-bg: #020617;
       }
       html {
         background-color: var(--topbar-bg, #020617);
       }
-      html.dark {
-        background-color: var(--topbar-bg, #020617);
-      }
       body {
-        background-color: var(--topbar-bg, #020617);
-      }
-      html.dark body {
-        background-color: var(--topbar-bg, #020617);
+        background-color: var(--canvas-bg, #020617);
       }
       html, body {
         height: 100%;
@@ -74,11 +87,18 @@
     </style>
   </head>
   <body class="text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-white">
-    <!-- Dedicated fixed element for iOS Safari Live Edge status bar sampling -->
+    <!-- Dedicated fixed element for iOS Safari Live Edge status bar sampling (top forehead) -->
     <div
       id="ios-status-bar-tint"
       aria-hidden="true"
       style="position: fixed; top: 0; left: 0; right: 0; width: 100%; height: max(4px, env(safe-area-inset-top, 4px)); min-height: 4px; background-color: var(--topbar-bg, #020617); pointer-events: none; z-index: 9999;"
+    ></div>
+
+    <!-- Dedicated fixed element for iOS Safari Live Edge bottom bar sampling (bottom chin, neutral canvas color) -->
+    <div
+      id="ios-bottom-bar-tint"
+      aria-hidden="true"
+      style="position: fixed; bottom: 0; left: 0; right: 0; width: 100%; height: max(4px, env(safe-area-inset-bottom, 4px)); min-height: 4px; background-color: var(--canvas-bg, #020617); pointer-events: none; z-index: 20;"
     ></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

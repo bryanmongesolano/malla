@@ -96,3 +96,114 @@ export function computeThemeColor(isDark: boolean, isSimulationMode: boolean): {
 
   return { color: solidHex, isDarkText };
 }
+
+/**
+ * Returns the base canvas background color (slate-950 for dark, slate-100 for light).
+ */
+export function getCanvasBgColor(isDark: boolean): string {
+  return isDark ? '#020617' : '#f1f5f9';
+}
+
+/**
+ * Checks if the current client is a mobile/touch device (iOS, Android, iPad).
+ */
+export function isMobileDevice(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  return (
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent))
+  );
+}
+
+/**
+ * Synchronously updates document styles, CSS variables, sampling elements,
+ * and theme-color / color-scheme meta tags across both mobile and desktop Safari.
+ */
+export function updateDocumentTheme(
+  isDark: boolean,
+  topbarColor: string,
+  baseSurfaceColor: string,
+  canvasBgColor: string,
+  isMobile: boolean
+): void {
+  if (typeof document === 'undefined') return;
+
+  const html = document.documentElement;
+  const body = document.body;
+
+  // 1. Toggle dark class and colorScheme
+  if (isDark) {
+    html.classList.add('dark');
+    html.style.colorScheme = 'dark';
+    if (body) body.style.colorScheme = 'dark';
+    try { localStorage.setItem('malla_theme', 'dark'); } catch {}
+  } else {
+    html.classList.remove('dark');
+    html.style.colorScheme = 'light';
+    if (body) body.style.colorScheme = 'light';
+    try { localStorage.setItem('malla_theme', 'light'); } catch {}
+  }
+
+  // 2. CSS variables
+  html.style.setProperty('--topbar-bg', topbarColor);
+  html.style.setProperty('--canvas-bg', canvasBgColor);
+
+  // 3. Status bar and bottom bar fixed sampling elements
+  const statusBarTint = document.getElementById('ios-status-bar-tint');
+  if (statusBarTint) {
+    statusBarTint.style.backgroundColor = topbarColor;
+  }
+  const bottomBarTint = document.getElementById('ios-bottom-bar-tint');
+  if (bottomBarTint) {
+    bottomBarTint.style.backgroundColor = canvasBgColor;
+  }
+
+  // 4. Background colors
+  html.style.backgroundColor = topbarColor;
+  if (body) {
+    body.style.backgroundColor = isMobile ? canvasBgColor : topbarColor;
+  }
+
+  // 5. Meta color-scheme
+  const metaScheme = document.getElementById('meta-color-scheme') || document.querySelector('meta[name="color-scheme"]');
+  if (metaScheme) {
+    metaScheme.setAttribute('content', isDark ? 'dark' : 'light');
+  }
+
+  // 6. Meta theme-color tags:
+  // On mobile: keep theme-color as baseSurfaceColor so iOS bottom address bar does NOT tint with amber/accent.
+  // On desktop PC: update theme-color to topbarColor, replacing nodes so macOS Safari reliably re-evaluates the window chrome.
+  const metaColor = isMobile ? baseSurfaceColor : topbarColor;
+
+  if (isMobile) {
+    const metaDefault = document.getElementById('theme-color-meta');
+    if (metaDefault) metaDefault.setAttribute('content', metaColor);
+    const metaLight = document.getElementById('theme-color-light');
+    if (metaLight) metaLight.setAttribute('content', metaColor);
+    const metaDark = document.getElementById('theme-color-dark');
+    if (metaDark) metaDark.setAttribute('content', metaColor);
+  } else {
+    // Desktop: Replace meta tags to trigger macOS Safari window title bar live update
+    const updateOrCreateMeta = (id: string, color: string, media?: string) => {
+      const existing = document.getElementById(id);
+      if (existing) {
+        existing.remove();
+      }
+      const newMeta = document.createElement('meta');
+      newMeta.id = id;
+      newMeta.name = 'theme-color';
+      newMeta.content = color;
+      if (media) newMeta.media = media;
+      document.head.appendChild(newMeta);
+    };
+
+    updateOrCreateMeta('theme-color-meta', metaColor);
+    updateOrCreateMeta('theme-color-light', metaColor, '(prefers-color-scheme: light)');
+    updateOrCreateMeta('theme-color-dark', metaColor, '(prefers-color-scheme: dark)');
+  }
+
+  // Force layout flush so WebKit computes styles immediately before composite
+  if (body) {
+    void body.offsetHeight;
+  }
+}
