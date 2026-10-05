@@ -10,13 +10,15 @@ interface HeaderProps {
   simulation: SimulationResult;
   isSettingsOpen: boolean;
   onToggleSettings: () => void;
+  isSimulationMode?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   overall,
   simulation,
   isSettingsOpen,
-  onToggleSettings
+  onToggleSettings,
+  isSimulationMode
 }) => {
   const [showRemainingTime, setShowRemainingTime] = useState<boolean>(() => {
     try {
@@ -87,7 +89,15 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* Right: Percentage (in progress bar green) at the left of date, and graduation date */}
-            <div className="flex items-center gap-2.5 sm:gap-3 ml-auto shrink-0 font-medium">
+            <div className="flex items-center gap-2 sm:gap-2.5 ml-auto shrink-0 font-medium">
+              {isSimulationMode && (
+                <span
+                  className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-[10px] tracking-wider uppercase border border-amber-500/30"
+                  title="Modo planeación activo: los cambios son un borrador y no tocan la base de datos"
+                >
+                  Planeación
+                </span>
+              )}
               <span className="text-xs font-mono font-bold text-emerald-500 dark:text-emerald-400">
                 {overall.percentCompleted}%
               </span>

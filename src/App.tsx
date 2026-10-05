@@ -25,10 +25,30 @@ export function App() {
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('tree');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Simulation mode (Sandbox)
-  const [isSimulationMode, setIsSimulationMode] = useState(false);
-  const [simulatedProgress, setSimulatedProgress] = useState<Record<string, StoredStatus> | null>(null);
-  const [simulatedSettings, setSimulatedSettings] = useState<UserSettings | null>(null);
+  // Simulation mode (Sandbox) with sessionStorage persistence so reloads don't drop to real DB mode
+  const [isSimulationMode, setIsSimulationMode] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('malla_simulation_active') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [simulatedProgress, setSimulatedProgress] = useState<Record<string, StoredStatus> | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('malla_simulation_progress');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [simulatedSettings, setSimulatedSettings] = useState<UserSettings | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('malla_simulation_settings');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // Alert banner notification (under topbar)
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
@@ -95,18 +115,21 @@ export function App() {
   // Active state: either real state or locally simulated state
   const activeState = useMemo<FullClientState | null>(() => {
     if (!state || !model) return null;
-    if (!isSimulationMode || !simulatedProgress || !simulatedSettings) {
+    if (!isSimulationMode) {
       return state;
     }
 
-    const statuses = computeAllStatuses(model, simulatedProgress);
-    const overall = computeOverallProgress(model, simulatedProgress);
-    const simulation = simulateGraduation(model, simulatedProgress, simulatedSettings.coursesPerPeriod);
+    const currentProgress = simulatedProgress ?? state.progress;
+    const currentSettings = simulatedSettings ?? state.settings;
+
+    const statuses = computeAllStatuses(model, currentProgress);
+    const overall = computeOverallProgress(model, currentProgress);
+    const simulation = simulateGraduation(model, currentProgress, currentSettings.coursesPerPeriod);
 
     return {
       ...state,
-      progress: simulatedProgress,
-      settings: simulatedSettings,
+      progress: currentProgress,
+      settings: currentSettings,
       statuses,
       overall,
       simulation
@@ -115,15 +138,31 @@ export function App() {
 
   const handleStartSimulation = () => {
     if (!state) return;
-    setSimulatedProgress({ ...state.progress });
-    setSimulatedSettings({ ...state.settings });
+    const progress = { ...state.progress };
+    const settings = { ...state.settings };
+    setSimulatedProgress(progress);
+    setSimulatedSettings(settings);
     setIsSimulationMode(true);
+    try {
+      sessionStorage.setItem('malla_simulation_active', 'true');
+      sessionStorage.setItem('malla_simulation_progress', JSON.stringify(progress));
+      sessionStorage.setItem('malla_simulation_settings', JSON.stringify(settings));
+    } catch {
+      // ignore
+    }
   };
 
   const handleExitSimulation = () => {
     setIsSimulationMode(false);
     setSimulatedProgress(null);
     setSimulatedSettings(null);
+    try {
+      sessionStorage.removeItem('malla_simulation_active');
+      sessionStorage.removeItem('malla_simulation_progress');
+      sessionStorage.removeItem('malla_simulation_settings');
+    } catch {
+      // ignore
+    }
   };
 
   const handleUpdateCourseStatus = async (
@@ -132,21 +171,26 @@ export function App() {
   ) => {
     if (!state || !model) return;
 
-    // Simulation mode: mutate in-memory snapshot only (no backend calls)
-    if (isSimulationMode && simulatedProgress) {
-      const check = canTransition(itemId, newStatus, model, simulatedProgress);
+    // Simulation mode: mutate in-memory snapshot only (ABSOLUTELY NO backend calls)
+    if (isSimulationMode) {
+      const currentSim = { ...(simulatedProgress ?? state.progress) };
+      const check = canTransition(itemId, newStatus, model, currentSim);
       if (!check.allowed && newStatus !== 'bloqueada' && newStatus !== 'disponible') {
         setAlertMsg(check.reason || 'Transición no permitida');
         return;
       }
 
-      const updated = { ...simulatedProgress };
       if (newStatus === 'disponible' || newStatus === 'bloqueada') {
-        delete updated[itemId];
+        delete currentSim[itemId];
       } else {
-        updated[itemId] = newStatus;
+        currentSim[itemId] = newStatus;
       }
-      setSimulatedProgress(updated);
+      setSimulatedProgress(currentSim);
+      try {
+        sessionStorage.setItem('malla_simulation_progress', JSON.stringify(currentSim));
+      } catch {
+        // ignore
+      }
       return;
     }
 
@@ -164,11 +208,17 @@ export function App() {
   };
 
   const handleSaveSettings = async (coursesPerPeriod: number) => {
-    if (isSimulationMode && simulatedSettings) {
-      setSimulatedSettings({
-        ...simulatedSettings,
+    if (isSimulationMode) {
+      const currentSimSettings = {
+        ...(simulatedSettings ?? state?.settings ?? { coursesPerPeriod: 4 }),
         coursesPerPeriod
-      });
+      };
+      setSimulatedSettings(currentSimSettings);
+      try {
+        sessionStorage.setItem('malla_simulation_settings', JSON.stringify(currentSimSettings));
+      } catch {
+        // ignore
+      }
       return;
     }
 
@@ -240,6 +290,7 @@ export function App() {
         simulation={activeState.simulation}
         isSettingsOpen={isSettingsOpen}
         onToggleSettings={() => setIsSettingsOpen(prev => !prev)}
+        isSimulationMode={isSimulationMode}
       />
 
       <main className="flex-1 w-full relative min-h-0 overflow-hidden">
