@@ -9,14 +9,13 @@ export interface CourseNodeData extends Record<string, unknown> {
   isDimmed: boolean;
   isFiltered: boolean;
   highlightRole: 'selected' | 'ancestor' | 'dependent' | null;
-  onSelect: (id: string) => void;
   onOpenMenu: (id: string, anchorRect: DOMRect) => void;
 }
 
 export type CourseNodeType = Node<CourseNodeData, 'course'>;
 
 export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
-  const { item, status, isUnlockedByCursando, isDimmed, isFiltered, highlightRole, onSelect, onOpenMenu } = data;
+  const { item, status, isUnlockedByCursando, isDimmed, isFiltered, highlightRole, onOpenMenu } = data;
   const nodeRef = React.useRef<HTMLDivElement>(null);
 
   // Base state styles (background, text, border)
@@ -63,7 +62,6 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
   return (
     <div
       ref={nodeRef}
-      onClick={() => onSelect(item.id)}
       className={`relative w-[184px] min-h-[76px] rounded-xl border-2 px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
       title={`${item.name} (${status}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`}
     >

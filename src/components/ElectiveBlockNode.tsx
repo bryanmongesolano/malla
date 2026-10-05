@@ -10,7 +10,6 @@ export interface ElectiveBlockNodeData extends Record<string, unknown> {
   isDimmed: boolean;
   isFiltered: boolean;
   highlightRole: 'selected' | 'ancestor' | 'dependent' | null;
-  onSelect: (id: string) => void;
   onOpenSheet: (id: string) => void;
 }
 
@@ -25,7 +24,6 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
     isDimmed,
     isFiltered,
     highlightRole,
-    onSelect,
     onOpenSheet
   } = data;
   const nodeRef = React.useRef<HTMLDivElement>(null);
@@ -70,7 +68,6 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
   return (
     <div
       ref={nodeRef}
-      onClick={() => onSelect(item.id)}
       className={`relative w-[184px] min-h-[76px] rounded-xl border-2 border-dashed px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
       title={`${item.name} (${completedCount}/${item.required}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`}
     >

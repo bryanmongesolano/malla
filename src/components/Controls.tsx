@@ -6,7 +6,7 @@ export const CanvasControls: React.FC = () => {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
 
   return (
-    <div className="absolute bottom-5 right-4 z-30 flex flex-col gap-1.5 bg-slate-900/90 border border-slate-700/80 p-1.5 rounded-2xl shadow-xl backdrop-blur-md">
+    <div className="absolute bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col gap-1.5 bg-slate-900/90 border border-slate-700/80 p-1.5 rounded-2xl shadow-xl backdrop-blur-md nodrag nopan">
       <button
         onClick={() => fitView({ padding: 0.15, duration: 400 })}
         className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"

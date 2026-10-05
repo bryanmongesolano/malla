@@ -14,6 +14,7 @@ import { ElectiveBlockNode } from './ElectiveBlockNode.js';
 import { StatusMenu } from './StatusMenu.js';
 import { ElectiveSheet } from './ElectiveSheet.js';
 import { CanvasControls } from './Controls.js';
+import { CanvasGestures } from './CanvasGestures.js';
 import type { FullClientState } from '../api.js';
 import type { FilterMode } from './Header.js';
 
@@ -128,7 +129,6 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
             isFiltered,
             isUnlockedByCursando,
             highlightRole,
-            onSelect: handleSelect,
             onOpenSheet: handleOpenSheet
           }
         };
@@ -143,7 +143,6 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           isFiltered,
           isUnlockedByCursando,
           highlightRole,
-          onSelect: handleSelect,
           onOpenMenu: handleOpenMenu
         }
       };
@@ -156,7 +155,6 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     directDependents,
     filterMode,
     unlockedByCursando,
-    handleSelect,
     handleOpenMenu,
     handleOpenSheet
   ]);
@@ -168,8 +166,24 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
       const targetId = edge.target;
 
       const sourceCompleted = state.statuses[sourceId] === 'completada';
+      const isCursandoUnlockEdge =
+        state.statuses[sourceId] === 'cursando' &&
+        unlockedByCursando.has(targetId);
 
       if (!selectedId) {
+        if (isCursandoUnlockEdge) {
+          return {
+            ...edge,
+            animated: true,
+            style: {
+              stroke: '#f59e0b',
+              strokeWidth: 3,
+              strokeDasharray: '6,4',
+              opacity: 1
+            }
+          };
+        }
+
         return {
           ...edge,
           style: {
@@ -190,6 +204,18 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         (directDependents.has(sourceId) && directDependents.has(targetId));
 
       if (isAncestorEdge) {
+        if (isCursandoUnlockEdge) {
+          return {
+            ...edge,
+            animated: true,
+            style: {
+              stroke: '#f59e0b',
+              strokeWidth: 3.5,
+              strokeDasharray: '6,4',
+              opacity: 1
+            }
+          };
+        }
         return {
           ...edge,
           animated: true,
@@ -202,6 +228,18 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
       }
 
       if (isDependentEdge) {
+        if (isCursandoUnlockEdge) {
+          return {
+            ...edge,
+            animated: true,
+            style: {
+              stroke: '#f59e0b',
+              strokeWidth: 3.5,
+              strokeDasharray: '6,4',
+              opacity: 1
+            }
+          };
+        }
         return {
           ...edge,
           animated: true,
@@ -209,6 +247,19 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
             stroke: '#22d3ee',
             strokeWidth: 3.5,
             opacity: 1
+          }
+        };
+      }
+
+      if (isCursandoUnlockEdge) {
+        return {
+          ...edge,
+          animated: true,
+          style: {
+            stroke: '#f59e0b',
+            strokeWidth: 2,
+            strokeDasharray: '5,4',
+            opacity: 0.45
           }
         };
       }
@@ -223,10 +274,10 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         }
       };
     });
-  }, [rawEdges, selectedId, ancestors, directDependents, state.statuses]);
+  }, [rawEdges, selectedId, ancestors, directDependents, state.statuses, unlockedByCursando]);
 
   return (
-    <div className="relative w-full h-[calc(100vh-68px)] bg-slate-100 dark:bg-slate-950 overflow-hidden select-none transition-colors duration-200">
+    <div className="relative w-full h-full bg-slate-100 dark:bg-slate-950 overflow-hidden select-none transition-colors duration-200">
       <ReactFlow
         nodes={displayNodes}
         edges={displayEdges}
@@ -237,11 +288,15 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.2}
         maxZoom={2.5}
-        zoomOnDoubleClick={false}
+        zoomOnDoubleClick={true}
+        zoomOnPinch={true}
+        panOnDrag={true}
         panOnScroll={false}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={false}
+        nodeClickDistance={8}
+        paneClickDistance={8}
       >
         <Background
           variant={BackgroundVariant.Dots}
@@ -250,6 +305,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           color={isDark ? "#1e293b" : "#cbd5e1"}
         />
         <CanvasControls />
+        <CanvasGestures />
       </ReactFlow>
 
       {/* Course status popover menu */}

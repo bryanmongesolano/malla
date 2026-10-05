@@ -135,7 +135,7 @@ export function App() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
+    <div className="w-full h-[100dvh] max-h-[100dvh] flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
       <Header
         overall={state.overall}
         simulation={state.simulation}
@@ -148,7 +148,7 @@ export function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
-      <main className="flex-1 w-full relative">
+      <main className="flex-1 w-full relative min-h-0 overflow-hidden">
         <CurriculumCanvas
           state={state}
           layoutMode={layoutMode}
@@ -161,7 +161,7 @@ export function App() {
 
       {/* Floating toast notification */}
       {toastMsg && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] bg-rose-950/95 border border-rose-500/60 text-rose-200 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex items-start gap-2.5 animate-in fade-in slide-in-from-bottom duration-300">
+        <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] bg-rose-950/95 border border-rose-500/60 text-rose-200 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex items-start gap-2.5 animate-in fade-in slide-in-from-bottom duration-300">
           <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 text-xs leading-snug">{toastMsg}</div>
           <button
