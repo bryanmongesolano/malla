@@ -117,14 +117,12 @@ export function App() {
     setSimulatedProgress({ ...state.progress });
     setSimulatedSettings({ ...state.settings });
     setIsSimulationMode(true);
-    setToastMsg('Modo Simulación activado: prueba cambios sin afectar tu avance real.');
   };
 
   const handleExitSimulation = () => {
     setIsSimulationMode(false);
     setSimulatedProgress(null);
     setSimulatedSettings(null);
-    setToastMsg('Has vuelto a tu avance real.');
   };
 
   const handleUpdateCourseStatus = async (
@@ -223,11 +221,9 @@ export function App() {
         simulation={activeState.simulation}
         filterMode={filterMode}
         layoutMode={layoutMode}
-        isDark={isDark}
         isSimulationMode={isSimulationMode}
         onSetFilterMode={setFilterMode}
         onSetLayoutMode={setLayoutMode}
-        onToggleTheme={() => setIsDark(prev => !prev)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onStartSimulation={handleStartSimulation}
         onExitSimulation={handleExitSimulation}
@@ -262,6 +258,8 @@ export function App() {
       {isSettingsOpen && (
         <SettingsDialog
           currentCoursesPerPeriod={activeState.settings.coursesPerPeriod}
+          isDark={isDark}
+          onToggleTheme={() => setIsDark(prev => !prev)}
           onClose={() => setIsSettingsOpen(false)}
           onSave={handleSaveSettings}
         />

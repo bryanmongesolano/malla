@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
-import { X, Settings, Check } from 'lucide-react';
+import { X, Settings, Check, Sun, Moon } from 'lucide-react';
 
 interface SettingsDialogProps {
   currentCoursesPerPeriod: number;
+  isDark: boolean;
+  onToggleTheme: () => void;
   onClose: () => void;
   onSave: (coursesPerPeriod: number) => Promise<void>;
 }
 
 export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   currentCoursesPerPeriod,
+  isDark,
+  onToggleTheme,
   onClose,
   onSave
 }) => {
@@ -33,7 +37,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
       <div className="relative z-10 w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-2xl">
         <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold">
-            <Settings className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <Settings className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             <h3 className="text-base font-bold">Ajustes</h3>
           </div>
           <button
@@ -67,6 +71,35 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 {coursesPerPeriod}
               </span>
             </div>
+          </div>
+
+          {/* Theme toggle row inside Settings */}
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-0.5">
+                Tema
+              </label>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Modo visual
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="min-h-[40px] px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-xs font-semibold flex items-center gap-2 text-slate-700 dark:text-slate-200 cursor-pointer active:scale-95 transition-all"
+            >
+              {isDark ? (
+                <>
+                  <Sun className="w-4 h-4 text-amber-500" />
+                  <span>Claro</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-4 h-4 text-indigo-500" />
+                  <span>Oscuro</span>
+                </>
+              )}
+            </button>
           </div>
 
           <div className="pt-2 flex justify-end gap-2.5">

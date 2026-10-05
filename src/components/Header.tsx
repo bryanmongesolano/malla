@@ -3,8 +3,6 @@ import {
   Calendar,
   Filter,
   Settings,
-  Sun,
-  Moon,
   GitFork,
   Columns,
   GraduationCap,
@@ -25,11 +23,9 @@ interface HeaderProps {
   simulation: SimulationResult;
   filterMode: FilterMode;
   layoutMode: LayoutMode;
-  isDark: boolean;
   isSimulationMode: boolean;
   onSetFilterMode: (m: FilterMode) => void;
   onSetLayoutMode: (m: LayoutMode) => void;
-  onToggleTheme: () => void;
   onOpenSettings: () => void;
   onStartSimulation: () => void;
   onExitSimulation: () => void;
@@ -40,11 +36,9 @@ export const Header: React.FC<HeaderProps> = ({
   simulation,
   filterMode,
   layoutMode,
-  isDark,
   isSimulationMode,
   onSetFilterMode,
   onSetLayoutMode,
-  onToggleTheme,
   onOpenSettings,
   onStartSimulation,
   onExitSimulation
@@ -90,89 +84,74 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2.5 sm:px-5 sm:py-3 transition-colors duration-200">
-      <div className="flex flex-col gap-2.5 max-w-7xl mx-auto">
-        {/* Row 1: Career Title (left) & Theme + Settings (right) */}
+    <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2 sm:px-5 sm:py-2.5 transition-colors duration-200">
+      <div className="flex flex-col gap-2 max-w-7xl mx-auto">
+        {/* Row 1: Title with progress bar extending underneath, meeting the borderless Settings icon */}
         <div className="flex items-center justify-between gap-3">
-          <span className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100 tracking-tight truncate">
-            Ingeniería del Software
-          </span>
+          <div className="flex-1 flex flex-col gap-1 min-w-0">
+            <span className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100 tracking-tight truncate">
+              Ingeniería del Software
+            </span>
+            {/* Progress bar directly beneath title extending to settings button */}
+            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 transition-all duration-500 rounded-full"
+                style={{ width: `${overall.percentCompleted}%` }}
+              />
+            </div>
+          </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Theme toggle (left) */}
-            <button
-              onClick={onToggleTheme}
-              className="min-w-[42px] min-h-[42px] p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer shadow-sm active:scale-95"
-              title={isDark ? 'Modo claro' : 'Modo oscuro'}
-            >
-              {isDark ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
-            </button>
+          {/* Settings icon only (borderless, backgroundless) */}
+          <button
+            onClick={onOpenSettings}
+            className="min-w-[42px] min-h-[42px] flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer active:scale-95 shrink-0"
+            title="Ajustes"
+          >
+            <Settings className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+          </button>
+        </div>
 
-            {/* Settings button with gear (right) */}
-            <button
-              onClick={onOpenSettings}
-              className="min-w-[42px] min-h-[42px] p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer shadow-sm active:scale-95"
-              title="Ajustes"
-            >
-              <Settings className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-            </button>
+        {/* Row 2: Date on left (icon, month and year only), data and green % on right */}
+        <div className="flex items-center justify-between gap-2 text-xs pt-1 border-t border-slate-100 dark:border-slate-900/60 flex-wrap">
+          {/* Left: Graduation date (only icon, month and year) */}
+          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
+            <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+            <span>{simulation.estimatedGraduationDate}</span>
+          </div>
+
+          {/* Right: Subtle dots + numbers, ending with percentage in green */}
+          <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
+            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Completadas">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+              <span>{overall.completedUnits}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Cursando">
+              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+              <span>{overall.cursandoUnits}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Disponibles">
+              <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
+              <span>{overall.availableUnits}</span>
+            </span>
+            {overall.suficienciaUnits > 0 && (
+              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Suficiencia">
+                <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
+                <span>{overall.suficienciaUnits}</span>
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Bloqueadas">
+              <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 shrink-0" />
+              <span>{overall.blockedUnits}</span>
+            </span>
+
+            {/* Percentage in progress bar green */}
+            <span className="text-xs font-mono font-bold text-emerald-500 dark:text-emerald-400 ml-1">
+              {overall.percentCompleted}%
+            </span>
           </div>
         </div>
 
-        {/* Row 2: Progress bar across, underneath: date on left, subtle status data + % on right */}
-        <div className="flex flex-col gap-1.5 pt-1 border-t border-slate-100 dark:border-slate-900/60">
-          {/* Progress bar */}
-          <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 transition-all duration-500 rounded-full"
-              style={{ width: `${overall.percentCompleted}%` }}
-            />
-          </div>
-
-          {/* Underneath progress bar: Date on left, data and % on right */}
-          <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
-            {/* Left: Estimated graduation date */}
-            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-              <span>
-                ≈ {simulation.periodsRemaining} cuatris · {simulation.estimatedGraduationDate}
-              </span>
-            </div>
-
-            {/* Right: Subtle dots + numbers, ending with percentage */}
-            <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
-              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Completadas">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                <span>{overall.completedUnits}</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Cursando">
-                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                <span>{overall.cursandoUnits}</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Disponibles">
-                <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
-                <span>{overall.availableUnits}</span>
-              </span>
-              {overall.suficienciaUnits > 0 && (
-                <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Suficiencia">
-                  <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0" />
-                  <span>{overall.suficienciaUnits}</span>
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Bloqueadas">
-                <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 shrink-0" />
-                <span>{overall.blockedUnits}</span>
-              </span>
-
-              {/* Percentage at the very end */}
-              <span className="text-xs font-mono font-bold text-slate-900 dark:text-slate-100 ml-1">
-                {overall.percentCompleted}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Row 3: Action Toolbar (Simulate on left, Filter & View on right) */}
+        {/* Row 3: Action Toolbar (Simulate on left, Filter & View on right with slate icon color) */}
         <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-900/60">
           {/* Left: Simulation button */}
           {!isSimulationMode ? (
@@ -195,7 +174,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Right: Filter & View buttons */}
+          {/* Right: Filter & View buttons with slate icon color matching settings */}
           <div className="flex items-center gap-2">
             {/* Filter button (icon only, active color only when not 'todas') */}
             <div className="relative" ref={filterRef}>
@@ -204,19 +183,16 @@ export const Header: React.FC<HeaderProps> = ({
                 className={`min-w-[42px] min-h-[42px] p-2.5 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95 ${
                   filterMode !== 'todas'
                     ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border-cyan-500/70 ring-1 ring-cyan-500/40'
-                    : 'border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                    : 'border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
                 }`}
                 title="Filtrar materias"
               >
                 <Filter className="w-5 h-5" />
               </button>
 
-              {/* Dropdown menu */}
+              {/* Dropdown menu without header */}
               {filterMenuOpen && (
                 <div className="absolute right-0 top-full mt-1.5 z-50 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 shadow-2xl animate-in fade-in duration-150">
-                  <div className="px-3 py-1.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    Filtrar vista
-                  </div>
                   <div className="space-y-1">
                     {filterOptions.map(opt => {
                       const isSelected = filterMode === opt.id;
@@ -246,16 +222,16 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            {/* Layout mode button (icon only) */}
+            {/* Layout mode button (icon only, color matching settings) */}
             <button
               onClick={() => onSetLayoutMode(layoutMode === 'tree' ? 'cuatrimestres' : 'tree')}
-              className="min-w-[42px] min-h-[42px] p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95"
+              className="min-w-[42px] min-h-[42px] p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95"
               title={layoutMode === 'tree' ? 'Cambiar a vista Cuatris' : 'Cambiar a vista Árbol'}
             >
               {layoutMode === 'tree' ? (
-                <GitFork className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                <GitFork className="w-5 h-5 text-slate-600 dark:text-slate-300" />
               ) : (
-                <Columns className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                <Columns className="w-5 h-5 text-slate-600 dark:text-slate-300" />
               )}
             </button>
           </div>
