@@ -187,6 +187,32 @@ export function App() {
     }
   }, [toastMsg]);
 
+  // Auto-blur buttons on touch/click to prevent sticky hover/focus background
+  useEffect(() => {
+    const blurBtn = (target: EventTarget | null) => {
+      const btn = (target as HTMLElement)?.closest('button');
+      if (btn) {
+        btn.blur();
+      }
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      if (e.pointerType === 'touch') {
+        blurBtn(e.target);
+      }
+    };
+    const handleClick = (e: MouseEvent) => {
+      blurBtn(e.target);
+    };
+
+    window.addEventListener('pointerup', handlePointerUp, { passive: true });
+    window.addEventListener('click', handleClick, { passive: true });
+    return () => {
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('click', handleClick);
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-slate-300 gap-3">
@@ -213,32 +239,6 @@ export function App() {
       </div>
     );
   }
-
-  // Auto-blur buttons on touch/click to prevent sticky hover/focus background
-  useEffect(() => {
-    const blurBtn = (target: EventTarget | null) => {
-      const btn = (target as HTMLElement)?.closest('button');
-      if (btn) {
-        btn.blur();
-      }
-    };
-
-    const handlePointerUp = (e: PointerEvent) => {
-      if (e.pointerType === 'touch') {
-        blurBtn(e.target);
-      }
-    };
-    const handleClick = (e: MouseEvent) => {
-      blurBtn(e.target);
-    };
-
-    window.addEventListener('pointerup', handlePointerUp, { passive: true });
-    window.addEventListener('click', handleClick, { passive: true });
-    return () => {
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('click', handleClick);
-    };
-  }, []);
 
   return (
     <div className="w-full h-[100dvh] max-h-[100dvh] flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
