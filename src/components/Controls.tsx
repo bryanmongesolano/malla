@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useReactFlow, useViewport } from '@xyflow/react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useReactFlow, useViewport, useNodesInitialized, getViewportForBounds } from '@xyflow/react';
 import {
   Crosshair,
   ZoomIn,
@@ -43,6 +43,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
 }) => {
   const { fitView, getNodes, getNodesBounds, setCenter } = useReactFlow();
   const { zoom } = useViewport();
+  const nodesInitialized = useNodesInitialized();
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -72,24 +73,39 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
     };
   }, [filterMenuOpen]);
 
-  // Calculate baseline fit zoom level for current viewport
-  const baselineFitZoom = useMemo(() => {
+  // Exact fit zoom calculation using React Flow's native layout engine
+  const calculateBaselineZoom = useCallback(() => {
     const nodes = getNodes();
-    if (!nodes || nodes.length === 0) return 0.5;
+    if (!nodes || nodes.length === 0) return 0.25;
     const bounds = getNodesBounds(nodes);
     const container = document.querySelector('.react-flow');
-    if (!container) return 0.5;
+    if (!container) return 0.25;
     const rect = container.getBoundingClientRect();
-    const pad = 0.18;
-    const availW = rect.width * (1 - pad * 2);
-    const availH = rect.height * (1 - pad * 2);
-    const zX = availW / bounds.width;
-    const zY = availH / bounds.height;
-    return Math.min(zX, zY, 1.0);
-  }, [getNodes, getNodesBounds, zoom]);
+    if (!rect.width || !rect.height) return 0.25;
+    const vp = getViewportForBounds(bounds, rect.width, rect.height, 0.15, 2.5, 0.18);
+    return vp.zoom;
+  }, [getNodes, getNodesBounds]);
+
+  const [baselineFitZoom, setBaselineFitZoom] = useState<number>(0.25);
+
+  useEffect(() => {
+    if (nodesInitialized) {
+      setBaselineFitZoom(calculateBaselineZoom());
+    }
+  }, [nodesInitialized, layoutMode, calculateBaselineZoom]);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (nodesInitialized) {
+        setBaselineFitZoom(calculateBaselineZoom());
+      }
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [nodesInitialized, calculateBaselineZoom]);
 
   // Reactive zoom state: any manual or automated zoom above baseline flips to "volver a estado normal"
-  const isZoomedIn = zoom > baselineFitZoom + 0.035;
+  const isZoomedIn = zoom > baselineFitZoom + 0.04;
 
   const handleToggleView = () => {
     const nodes = getNodes();
@@ -98,14 +114,17 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
       return;
     }
 
-    if (isZoomedIn) {
-      // Return to complete normal overview
+    const currentBaseline = calculateBaselineZoom();
+    setBaselineFitZoom(currentBaseline);
+
+    if (zoom > currentBaseline + 0.04) {
+      // Zoomed in -> return to complete normal overview
       fitView({ padding: 0.18, duration: 400 });
     } else {
-      // Zoom in to comfortable reading size (a bit less than before: ~0.68)
+      // In overview -> zoom in to comfortable reading size (~0.68)
       const bounds = getNodesBounds(nodes);
       const isHorizontal = layoutMode === 'horizontal' || layoutMode === 'cuatrimestres';
-      const targetZoom = Math.min(Math.max(baselineFitZoom * 2.2, 0.65), 0.72);
+      const targetZoom = Math.min(Math.max(currentBaseline * 2.2, 0.65), 0.72);
 
       if (isHorizontal) {
         // Focus on the left (Level 0 / start of career path)

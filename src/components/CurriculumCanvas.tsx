@@ -38,14 +38,14 @@ const AdaptiveBackground: React.FC<{ isDark: boolean }> = ({ isDark }) => {
     return 24 / currentZoom;
   }, [zoom]);
 
-  // Constant screen dot diameter (~1.6px) regardless of zoom level
+  // Constant screen dot diameter (~1.5px) regardless of zoom level
   const size = useMemo(() => {
     const currentZoom = Math.max(zoom, 0.05);
-    return 1.6 / currentZoom;
+    return 1.5 / currentZoom;
   }, [zoom]);
 
-  // Constant, clearly visible colors regardless of zoom
-  const color = isDark ? '#2b384c' : '#cbd5e1';
+  // Softened opacity: clearly visible, but without harsh contrast
+  const color = isDark ? 'rgba(43, 56, 76, 0.65)' : 'rgba(203, 213, 225, 0.70)';
 
   return (
     <Background
