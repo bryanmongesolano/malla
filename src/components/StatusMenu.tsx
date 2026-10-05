@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Clock, Play, X } from 'lucide-react';
+import { Check, Clock, Play, GraduationCap, X } from 'lucide-react';
 import type { StandardCourse, CourseStatus, StoredStatus } from '@shared/types.js';
 import { canTransition } from '@shared/transitions.js';
 import { CurriculumModel } from '@shared/curriculum.js';
@@ -11,7 +11,7 @@ interface StatusMenuProps {
   model: CurriculumModel;
   progress: Record<string, StoredStatus>;
   onClose: () => void;
-  onSelectStatus: (status: 'disponible' | 'cursando' | 'completada') => void;
+  onSelectStatus: (status: 'disponible' | 'cursando' | 'completada' | 'suficiencia') => void;
 }
 
 export const StatusMenu: React.FC<StatusMenuProps> = ({
@@ -26,6 +26,7 @@ export const StatusMenu: React.FC<StatusMenuProps> = ({
   // Test transition availability for each option
   const checkDisponible = canTransition(item.id, 'disponible', model, progress);
   const checkCursando = canTransition(item.id, 'cursando', model, progress);
+  const checkSuficiencia = canTransition(item.id, 'suficiencia', model, progress);
   const checkCompletada = canTransition(item.id, 'completada', model, progress);
 
   // Position popover
@@ -115,7 +116,32 @@ export const StatusMenu: React.FC<StatusMenuProps> = ({
             <p className="text-[10px] text-rose-600 dark:text-rose-400/90 px-1 leading-tight">{checkCursando.reason}</p>
           )}
 
-          {/* 3. Completada */}
+          {/* 3. Suficiencia (Morado) */}
+          <button
+            disabled={!checkSuficiencia.allowed && currentStatus !== 'suficiencia'}
+            onClick={() => {
+              onSelectStatus('suficiencia');
+              onClose();
+            }}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
+              currentStatus === 'suficiencia'
+                ? 'bg-purple-500/20 border-purple-500 text-purple-800 dark:text-purple-200 ring-1 ring-purple-500'
+                : checkSuficiencia.allowed
+                ? 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-purple-500/50'
+                : 'bg-slate-100 dark:bg-slate-800/30 border-slate-200 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+              <span>Suficiencia</span>
+            </div>
+            {currentStatus === 'suficiencia' && <Check className="w-4 h-4 text-purple-500 dark:text-purple-400" />}
+          </button>
+          {!checkSuficiencia.allowed && currentStatus !== 'suficiencia' && (
+            <p className="text-[10px] text-rose-600 dark:text-rose-400/90 px-1 leading-tight">{checkSuficiencia.reason}</p>
+          )}
+
+          {/* 4. Completada */}
           <button
             disabled={!checkCompletada.allowed && currentStatus !== 'completada'}
             onClick={() => {

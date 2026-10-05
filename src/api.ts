@@ -37,7 +37,7 @@ export async function fetchState(): Promise<FullClientState> {
 
 export async function updateProgress(
   itemId: string,
-  status: 'disponible' | 'cursando' | 'completada'
+  status: 'disponible' | 'cursando' | 'completada' | 'suficiencia'
 ): Promise<{ ok: boolean; state: FullClientState }> {
   const res = await fetch(`/api/progress/${encodeURIComponent(itemId)}`, {
     method: 'PUT',

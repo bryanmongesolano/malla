@@ -73,7 +73,7 @@ export function App() {
 
   const handleUpdateCourseStatus = async (
     itemId: string,
-    newStatus: 'disponible' | 'cursando' | 'completada'
+    newStatus: 'disponible' | 'cursando' | 'completada' | 'suficiencia'
   ) => {
     if (!state) return;
 

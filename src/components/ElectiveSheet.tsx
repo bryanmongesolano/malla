@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Check, Play, Clock, Lock } from 'lucide-react';
+import { X, Check, Play, Clock, GraduationCap, Lock } from 'lucide-react';
 import type { ElectiveBlock, CourseStatus, StoredStatus } from '@shared/types.js';
 import { CurriculumModel } from '@shared/curriculum.js';
 import { canTransition } from '@shared/transitions.js';
@@ -11,7 +11,7 @@ interface ElectiveSheetProps {
   model: CurriculumModel;
   progress: Record<string, StoredStatus>;
   onClose: () => void;
-  onUpdateStatus: (optionId: string, status: 'disponible' | 'cursando' | 'completada') => void;
+  onUpdateStatus: (optionId: string, status: 'disponible' | 'cursando' | 'completada' | 'suficiencia') => void;
 }
 
 export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
@@ -68,6 +68,7 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
             const status = optionStatuses[opt.id] || 'bloqueada';
             const checkDisponible = canTransition(opt.id, 'disponible', model, progress);
             const checkCursando = canTransition(opt.id, 'cursando', model, progress);
+            const checkSuficiencia = canTransition(opt.id, 'suficiencia', model, progress);
             const checkCompletada = canTransition(opt.id, 'completada', model, progress);
 
             return (
@@ -85,6 +86,8 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                             ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40'
                             : status === 'cursando'
                             ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40'
+                            : status === 'suficiencia'
+                            ? 'bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-500/40'
                             : status === 'disponible'
                             ? 'bg-sky-500/20 text-sky-800 dark:text-sky-300 border border-sky-500/40'
                             : 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-500 border border-slate-300 dark:border-slate-700/50'
@@ -105,7 +108,7 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                 </div>
 
                 {/* State selector buttons */}
-                <div className="grid grid-cols-3 gap-1.5 pt-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
                   <button
                     disabled={!checkDisponible.allowed && status !== 'disponible'}
                     onClick={() => onUpdateStatus(opt.id, 'disponible')}
@@ -134,6 +137,21 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                   >
                     <Play className="w-3.5 h-3.5" />
                     <span>Cursando</span>
+                  </button>
+
+                  <button
+                    disabled={!checkSuficiencia.allowed && status !== 'suficiencia'}
+                    onClick={() => onUpdateStatus(opt.id, 'suficiencia')}
+                    className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      status === 'suficiencia'
+                        ? 'bg-purple-600 text-white font-bold shadow-sm'
+                        : checkSuficiencia.allowed
+                        ? 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                        : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
+                    }`}
+                  >
+                    <GraduationCap className="w-3.5 h-3.5" />
+                    <span>Suficiencia</span>
                   </button>
 
                   <button

@@ -1,6 +1,6 @@
-export type CourseStatus = 'bloqueada' | 'disponible' | 'cursando' | 'completada';
+export type CourseStatus = 'bloqueada' | 'disponible' | 'cursando' | 'completada' | 'suficiencia';
 
-export type StoredStatus = 'cursando' | 'completada';
+export type StoredStatus = 'cursando' | 'completada' | 'suficiencia';
 
 export interface BaseCourse {
   id: string;
@@ -78,6 +78,7 @@ export interface OverallProgress {
   cursandoUnits: number;
   availableUnits: number;
   blockedUnits: number;
+  suficienciaUnits: number;
   percentCompleted: number;
   totalCredits: number;
   completedCredits: number;

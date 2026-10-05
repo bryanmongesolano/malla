@@ -37,6 +37,10 @@ export function computeAllStatuses(
         opt => progress[opt.id] === 'cursando'
       );
 
+      const hasSuficienciaOption = item.options.some(
+        opt => progress[opt.id] === 'suficiencia'
+      );
+
       // Check block prereqs
       const blockPrereqsMet = item.prereqs.every(isPrereqCompleted);
 
@@ -44,6 +48,8 @@ export function computeAllStatuses(
         statuses[item.id] = 'completada';
       } else if (hasCursandoOption) {
         statuses[item.id] = 'cursando';
+      } else if (hasSuficienciaOption) {
+        statuses[item.id] = 'suficiencia';
       } else if (blockPrereqsMet) {
         statuses[item.id] = 'disponible';
       } else {
@@ -57,8 +63,10 @@ export function computeAllStatuses(
           statuses[opt.id] = 'completada';
         } else if (stored === 'cursando') {
           statuses[opt.id] = 'cursando';
+        } else if (stored === 'suficiencia') {
+          statuses[opt.id] = 'suficiencia';
         } else {
-          // It is not completed or cursando. Check if it can be available:
+          // It is not completed, cursando or suficiencia. Check if it can be available:
           // Parent block must not be locked, and option's own prereqs must be met
           const optionPrereqsMet = opt.prereqs.every(isPrereqCompleted);
           if (blockPrereqsMet && optionPrereqsMet) {
@@ -75,6 +83,8 @@ export function computeAllStatuses(
         statuses[item.id] = 'completada';
       } else if (stored === 'cursando') {
         statuses[item.id] = 'cursando';
+      } else if (stored === 'suficiencia') {
+        statuses[item.id] = 'suficiencia';
       } else {
         const prereqsMet = item.prereqs.every(isPrereqCompleted);
         if (prereqsMet) {
@@ -99,6 +109,7 @@ export function computeOverallProgress(
   let totalUnits = 0;
   let completedUnits = 0;
   let cursandoUnits = 0;
+  let suficienciaUnits = 0;
   let availableUnits = 0;
   let blockedUnits = 0;
 
@@ -119,6 +130,10 @@ export function computeOverallProgress(
         opt => statuses[opt.id] === 'cursando'
       ).length;
 
+      const suficienciaOpts = item.options.filter(
+        opt => statuses[opt.id] === 'suficiencia'
+      ).length;
+
       const effectiveCompleted = Math.min(completedOpts, item.required);
       completedUnits += effectiveCompleted;
 
@@ -130,12 +145,15 @@ export function computeOverallProgress(
       const effectiveCursando = Math.min(cursandoOpts, remainingNeeded);
       cursandoUnits += effectiveCursando;
 
+      const effectiveSuficiencia = Math.min(suficienciaOpts, Math.max(0, remainingNeeded - effectiveCursando));
+      suficienciaUnits += effectiveSuficiencia;
+
       if (effectiveCompleted >= item.required) {
         // Block is completed
-      } else if (statuses[item.id] === 'disponible') {
-        availableUnits += remainingNeeded - effectiveCursando;
+      } else if (statuses[item.id] === 'disponible' || statuses[item.id] === 'suficiencia') {
+        availableUnits += Math.max(0, remainingNeeded - effectiveCursando - effectiveSuficiencia);
       } else {
-        blockedUnits += remainingNeeded - effectiveCursando;
+        blockedUnits += Math.max(0, remainingNeeded - effectiveCursando - effectiveSuficiencia);
       }
     } else {
       totalUnits += 1;
@@ -145,6 +163,8 @@ export function computeOverallProgress(
         completedCredits += item.credits;
       } else if (status === 'cursando') {
         cursandoUnits += 1;
+      } else if (status === 'suficiencia') {
+        suficienciaUnits += 1;
       } else if (status === 'disponible') {
         availableUnits += 1;
       } else {
@@ -160,6 +180,7 @@ export function computeOverallProgress(
     totalUnits,
     completedUnits,
     cursandoUnits,
+    suficienciaUnits,
     availableUnits,
     blockedUnits,
     percentCompleted,

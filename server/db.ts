@@ -21,7 +21,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS progress (
     username   TEXT NOT NULL,
     item_id    TEXT NOT NULL,
-    status     TEXT NOT NULL CHECK (status IN ('cursando', 'completada')),
+    status     TEXT NOT NULL CHECK (status IN ('cursando', 'completada', 'suficiencia')),
     updated_at TEXT NOT NULL,
     PRIMARY KEY (username, item_id)
   );
@@ -32,6 +32,27 @@ db.exec(`
     updated_at          TEXT NOT NULL
   );
 `);
+
+// Check if progress table constraint needs upgrade to include 'suficiencia'
+const tableInfo = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='progress'").get() as { sql?: string } | undefined;
+if (tableInfo?.sql && !tableInfo.sql.includes('suficiencia')) {
+  db.exec(`
+    PRAGMA foreign_keys=off;
+    BEGIN TRANSACTION;
+    CREATE TABLE progress_new (
+      username   TEXT NOT NULL,
+      item_id    TEXT NOT NULL,
+      status     TEXT NOT NULL CHECK (status IN ('cursando', 'completada', 'suficiencia')),
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY (username, item_id)
+    );
+    INSERT OR IGNORE INTO progress_new SELECT username, item_id, status, updated_at FROM progress;
+    DROP TABLE progress;
+    ALTER TABLE progress_new RENAME TO progress;
+    COMMIT;
+    PRAGMA foreign_keys=on;
+  `);
+}
 
 export function getUserProgress(username: string): Record<string, StoredStatus> {
   const stmt = db.prepare('SELECT item_id, status FROM progress WHERE username = ?');
@@ -46,7 +67,7 @@ export function getUserProgress(username: string): Record<string, StoredStatus> 
 export function setUserProgressItem(
   username: string,
   itemId: string,
-  status: 'disponible' | 'cursando' | 'completada'
+  status: 'disponible' | 'cursando' | 'completada' | 'suficiencia'
 ): void {
   const now = new Date().toISOString();
   if (status === 'disponible') {

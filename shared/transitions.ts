@@ -8,7 +8,7 @@ import { getAllDependents } from './graph.js';
 
 export function canTransition(
   itemId: string,
-  targetStatus: 'disponible' | 'cursando' | 'completada',
+  targetStatus: 'disponible' | 'cursando' | 'completada' | 'suficiencia',
   model: CurriculumModel,
   progress: Record<string, StoredStatus>
 ): TransitionCheckResult {
@@ -27,7 +27,7 @@ export function canTransition(
     return { allowed: true };
   }
 
-  // Locked item cannot be moved to cursando or completada
+  // Locked item cannot be moved to cursando, completada or suficiencia
   if (current === 'bloqueada') {
     const item = model.getItem(itemId);
     const option = model.getElectiveOption(itemId);
@@ -60,11 +60,12 @@ export function canTransition(
     };
   }
 
-  // Transitions towards advancing (disponible -> cursando, disponible -> completada, cursando -> completada)
-  // are always allowed if not locked.
+  // Transitions between non-completed states or advancing to completada:
+  // (disponible <-> suficiencia, disponible/suficiencia/cursando -> completada, cursando -> disponible/suficiencia)
   if (
-    (current === 'disponible' && (targetStatus === 'cursando' || targetStatus === 'completada')) ||
-    (current === 'cursando' && targetStatus === 'completada')
+    (current === 'disponible' && ['cursando', 'completada', 'suficiencia'].includes(targetStatus)) ||
+    (current === 'suficiencia' && ['disponible', 'cursando', 'completada'].includes(targetStatus)) ||
+    (current === 'cursando' && ['disponible', 'suficiencia', 'completada'].includes(targetStatus))
   ) {
     return { allowed: true };
   }

@@ -210,4 +210,29 @@ describe('Graduation Simulator', () => {
     // SOFT-07 requires SOFT-02, which is not yet cursando/completed, so SOFT-07 must NOT be in unlocked
     expect(unlocked.has('SOFT-07')).toBe(false);
   });
+
+  it('supports the suficiencia state and its transitions correctly', () => {
+    // SOFT-01 is disponible by default
+    const progress: Record<string, StoredStatus> = {
+      'SOFT-01': 'suficiencia'
+    };
+
+    const statuses = computeAllStatuses(model, progress);
+    expect(statuses['SOFT-01']).toBe('suficiencia');
+
+    // Suficiencia does NOT unlock dependent courses (SOFT-02 is still blocked)
+    expect(statuses['SOFT-02']).toBe('bloqueada');
+
+    // Overall progress tracks suficienciaUnits
+    const overall = computeOverallProgress(model, progress);
+    expect(overall.suficienciaUnits).toBe(1);
+
+    // Transitions from suficiencia
+    expect(canTransition('SOFT-01', 'disponible', model, progress).allowed).toBe(true);
+    expect(canTransition('SOFT-01', 'cursando', model, progress).allowed).toBe(true);
+    expect(canTransition('SOFT-01', 'completada', model, progress).allowed).toBe(true);
+
+    // Blocked course cannot be transitioned to suficiencia directly
+    expect(canTransition('SOFT-02', 'suficiencia', model, progress).allowed).toBe(false);
+  });
 });

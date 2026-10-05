@@ -10,12 +10,13 @@ import {
   Sun,
   Moon,
   GitFork,
-  Columns
+  Columns,
+  GraduationCap
 } from 'lucide-react';
 import type { OverallProgress, SimulationResult } from '@shared/types.js';
 import type { LayoutMode } from '../layout.js';
 
-export type FilterMode = 'todas' | 'disponibles' | 'ocultar_completadas';
+export type FilterMode = 'todas' | 'disponibles' | 'suficiencia' | 'ocultar_completadas';
 
 interface HeaderProps {
   overall: OverallProgress;
@@ -42,12 +43,14 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const cycleFilter = () => {
     if (filterMode === 'todas') onSetFilterMode('disponibles');
-    else if (filterMode === 'disponibles') onSetFilterMode('ocultar_completadas');
+    else if (filterMode === 'disponibles') onSetFilterMode('suficiencia');
+    else if (filterMode === 'suficiencia') onSetFilterMode('ocultar_completadas');
     else onSetFilterMode('todas');
   };
 
   const getFilterLabel = () => {
     if (filterMode === 'disponibles') return 'Solo disponibles';
+    if (filterMode === 'suficiencia') return 'Suficiencia';
     if (filterMode === 'ocultar_completadas') return 'Ocultar completadas';
     return 'Todas';
   };
@@ -96,6 +99,12 @@ export const Header: React.FC<HeaderProps> = ({
               <Clock className="w-3.5 h-3.5" />
               <span>{overall.availableUnits}</span>
             </span>
+            {overall.suficienciaUnits > 0 && (
+              <span className="inline-flex items-center gap-1 text-purple-700 bg-purple-100 border border-purple-300 dark:text-purple-300 dark:bg-purple-950/50 dark:border-purple-800/80 px-2 py-0.5 rounded-md font-medium" title="Suficiencia">
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>{overall.suficienciaUnits}</span>
+              </span>
+            )}
             <span className="inline-flex items-center gap-1 text-slate-600 bg-slate-100 border border-slate-300 dark:text-slate-400 dark:bg-slate-900/70 dark:border-slate-800 px-2 py-0.5 rounded-md font-medium" title="Bloqueadas">
               <Lock className="w-3.5 h-3.5" />
               <span>{overall.blockedUnits}</span>

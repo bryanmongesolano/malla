@@ -30,6 +30,9 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
     case 'disponible':
       statusStyles = 'bg-sky-100/95 text-sky-950 border-sky-500 shadow-sky-900/10 dark:bg-sky-950/90 dark:text-sky-100 dark:border-sky-500 dark:shadow-sky-950/40';
       break;
+    case 'suficiencia':
+      statusStyles = 'bg-purple-100/95 text-purple-950 border-purple-500 shadow-purple-900/10 ring-1 ring-purple-400 dark:bg-purple-950/90 dark:text-purple-100 dark:border-purple-500 dark:shadow-purple-950/40 dark:ring-purple-400/40';
+      break;
     case 'bloqueada':
     default:
       if (isUnlockedByCursando) {
@@ -74,6 +77,13 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
       <span className="text-[12px] font-semibold leading-tight line-clamp-2 pointer-events-none">
         {item.name}
       </span>
+
+      {/* Badge if marked as suficiencia */}
+      {status === 'suficiencia' && highlightRole !== 'selected' && (
+        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-800 dark:text-purple-300 font-semibold mt-0.5 pointer-events-none">
+          Suficiencia
+        </span>
+      )}
 
       {/* Badge if unlocked by current cursando courses */}
       {status === 'bloqueada' && isUnlockedByCursando && highlightRole !== 'selected' && (

@@ -28,7 +28,7 @@ interface CurriculumCanvasProps {
   layoutMode: LayoutMode;
   filterMode: FilterMode;
   isDark: boolean;
-  onUpdateCourseStatus: (itemId: string, status: 'disponible' | 'cursando' | 'completada') => Promise<void>;
+  onUpdateCourseStatus: (itemId: string, status: 'disponible' | 'cursando' | 'completada' | 'suficiencia') => Promise<void>;
   onError: (msg: string) => void;
 }
 
@@ -100,7 +100,9 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
 
       let isFiltered = false;
       if (filterMode === 'disponibles') {
-        isFiltered = status !== 'disponible' && !isUnlockedByCursando;
+        isFiltered = status !== 'disponible' && status !== 'suficiencia' && !isUnlockedByCursando;
+      } else if (filterMode === 'suficiencia') {
+        isFiltered = status !== 'suficiencia';
       } else if (filterMode === 'ocultar_completadas') {
         isFiltered = status === 'completada';
       }

@@ -101,4 +101,20 @@ describe('Server API Integration Tests', () => {
     const body = await res.json();
     expect(body.state.settings.coursesPerPeriod).toBe(5);
   });
+
+  it('PUT /api/progress/:itemId allows setting status to suficiencia', async () => {
+    const res = await app.request('/api/progress/FUN-01', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-authentik-username': 'testuser'
+      },
+      body: JSON.stringify({ status: 'suficiencia' })
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.state.statuses['FUN-01']).toBe('suficiencia');
+    expect(body.state.overall.suficienciaUnits).toBeGreaterThanOrEqual(1);
+  });
 });
