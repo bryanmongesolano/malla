@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useReactFlow } from '@xyflow/react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useReactFlow, useViewport } from '@xyflow/react';
 import {
   Crosshair,
   ZoomIn,
@@ -42,9 +42,21 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
   onSetLayoutMode
 }) => {
   const { fitView, getNodes, getNodesBounds, setCenter } = useReactFlow();
-  const [isZoomedIn, setIsZoomedIn] = useState(false);
+  const { zoom } = useViewport();
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  // Auto fit complete view when layout mode changes
+  const prevLayoutModeRef = useRef<LayoutMode>(layoutMode);
+  useEffect(() => {
+    if (prevLayoutModeRef.current !== layoutMode) {
+      prevLayoutModeRef.current = layoutMode;
+      const t = setTimeout(() => {
+        fitView({ padding: 0.18, duration: 400 });
+      }, 50);
+      return () => clearTimeout(t);
+    }
+  }, [layoutMode, fitView]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -60,23 +72,52 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
     };
   }, [filterMenuOpen]);
 
+  // Calculate baseline fit zoom level for current viewport
+  const baselineFitZoom = useMemo(() => {
+    const nodes = getNodes();
+    if (!nodes || nodes.length === 0) return 0.5;
+    const bounds = getNodesBounds(nodes);
+    const container = document.querySelector('.react-flow');
+    if (!container) return 0.5;
+    const rect = container.getBoundingClientRect();
+    const pad = 0.18;
+    const availW = rect.width * (1 - pad * 2);
+    const availH = rect.height * (1 - pad * 2);
+    const zX = availW / bounds.width;
+    const zY = availH / bounds.height;
+    return Math.min(zX, zY, 1.0);
+  }, [getNodes, getNodesBounds, zoom]);
+
+  // Reactive zoom state: any manual or automated zoom above baseline flips to "volver a estado normal"
+  const isZoomedIn = zoom > baselineFitZoom + 0.035;
+
   const handleToggleView = () => {
     const nodes = getNodes();
     if (!nodes || nodes.length === 0) {
-      fitView({ padding: 0.15, duration: 400 });
-      setIsZoomedIn(false);
+      fitView({ padding: 0.18, duration: 400 });
       return;
     }
 
     if (isZoomedIn) {
-      fitView({ padding: 0.15, duration: 400 });
-      setIsZoomedIn(false);
+      // Return to complete normal overview
+      fitView({ padding: 0.18, duration: 400 });
     } else {
+      // Zoom in to comfortable reading size (a bit less than before: ~0.68)
       const bounds = getNodesBounds(nodes);
-      const targetCenterX = bounds.x + bounds.width / 2;
-      const targetCenterY = bounds.y + bounds.height / 2;
-      setCenter(targetCenterX, targetCenterY, { zoom: 0.85, duration: 400 });
-      setIsZoomedIn(true);
+      const isHorizontal = layoutMode === 'horizontal' || layoutMode === 'cuatrimestres';
+      const targetZoom = Math.min(Math.max(baselineFitZoom * 2.2, 0.65), 0.72);
+
+      if (isHorizontal) {
+        // Focus on the left (Level 0 / start of career path)
+        const targetX = bounds.x + 130;
+        const targetY = bounds.y + bounds.height / 2;
+        setCenter(targetX, targetY, { zoom: targetZoom, duration: 400 });
+      } else {
+        // Focus at the top center (Level 0 / foundation courses)
+        const targetX = bounds.x + bounds.width / 2;
+        const targetY = bounds.y + 110;
+        setCenter(targetX, targetY, { zoom: targetZoom, duration: 400 });
+      }
     }
   };
 

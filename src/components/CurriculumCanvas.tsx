@@ -3,6 +3,7 @@ import {
   ReactFlow,
   Background,
   BackgroundVariant,
+  useViewport,
   type NodeTypes
 } from '@xyflow/react';
 import type { StandardCourse, ElectiveBlock, CurriculumItem } from '@shared/types.js';
@@ -21,6 +22,45 @@ import type { FilterMode } from './Header.js';
 const nodeTypes: NodeTypes = {
   course: CourseNode as any,
   electiveBlock: ElectiveBlockNode as any
+};
+
+/**
+ * AdaptiveBackground dynamically scales SVG pattern dot radius and grid gap
+ * based on the active viewport zoom level (Figma / Miro style LOD), ensuring
+ * dots never vanish or blur into subpixels when zooming out.
+ */
+const AdaptiveBackground: React.FC<{ isDark: boolean }> = ({ isDark }) => {
+  const { zoom } = useViewport();
+
+  // Multi-tier Level of Detail (LOD) grid gap
+  const gap = useMemo(() => {
+    if (zoom < 0.35) return 80;
+    if (zoom < 0.6) return 48;
+    return 24;
+  }, [zoom]);
+
+  // Scaled pattern size so physical screen dot diameter stays crisp (~1.6px - 2.2px)
+  const size = useMemo(() => {
+    const targetPx = zoom < 0.45 ? 2.0 : 1.6;
+    return Math.max(1.2, targetPx / Math.max(zoom, 0.08));
+  }, [zoom]);
+
+  // Adaptive contrast tuning
+  const color = useMemo(() => {
+    if (isDark) {
+      return zoom < 0.45 ? '#334155' : '#1e293b';
+    }
+    return zoom < 0.45 ? '#94a3b8' : '#cbd5e1';
+  }, [isDark, zoom]);
+
+  return (
+    <Background
+      variant={BackgroundVariant.Dots}
+      gap={gap}
+      size={size}
+      color={color}
+    />
+  );
 };
 
 interface CurriculumCanvasProps {
@@ -368,8 +408,8 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.2}
+        fitViewOptions={{ padding: 0.18 }}
+        minZoom={0.15}
         maxZoom={2.5}
         zoomOnDoubleClick={true}
         zoomOnPinch={true}
@@ -381,12 +421,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         nodeClickDistance={8}
         paneClickDistance={8}
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={24}
-          size={1.2}
-          color={isDark ? "#1e293b" : "#cbd5e1"}
-        />
+        <AdaptiveBackground isDark={isDark} />
         <CanvasControls
           hasSelection={!!selectedId}
           onEdit={handleOpenSelection}
