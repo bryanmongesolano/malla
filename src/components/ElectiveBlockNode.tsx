@@ -80,7 +80,7 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
 
   return (
     <div
-      className={`relative ${dimensions} rounded-xl border-2 border-dashed flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
+      className={`relative ${dimensions} rounded-xl border-2 border-dashed flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md outline-none focus:outline-none active:outline-none ${statusStyles} ${highlightStyles} ${opacityStyles}`}
       title={
         highlightRole === 'selected'
           ? `${item.name} (${completedCount}/${item.required}) — Atajos: E (Elegir optativa), Esc (Deseleccionar)`

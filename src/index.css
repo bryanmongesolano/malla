@@ -12,12 +12,47 @@
 }
 
 /* Global touch highlight, outline reset, and eliminate 300ms double-tap delay */
-* {
-  -webkit-tap-highlight-color: transparent;
+*, *::before, *::after {
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 html, body, #root, .react-flow, .react-flow__node {
   touch-action: manipulation;
+}
+
+/* Eliminate native browser focus outline and tap-highlight on canvas, nodes and flowchart elements */
+.react-flow,
+.react-flow *,
+.react-flow *:focus,
+.react-flow *:focus-visible,
+.react-flow *:focus-within,
+.react-flow *:active,
+.react-flow__node,
+.react-flow__node *,
+.react-flow__node:focus,
+.react-flow__node:focus-visible,
+.react-flow__node:focus-within,
+.react-flow__node:active,
+.react-flow__pane,
+.react-flow__pane:focus,
+.react-flow__pane:focus-visible,
+.react-flow__pane:active,
+.react-flow__viewport,
+.react-flow__edge,
+.react-flow__edge:focus,
+.react-flow__handle {
+  outline: none !important;
+  outline-style: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none;
+}
+
+.react-flow__node,
+.react-flow__node:focus,
+.react-flow__node:focus-visible,
+.react-flow__node:focus-within,
+.react-flow__node:active {
+  box-shadow: none !important;
 }
 
 button:focus {

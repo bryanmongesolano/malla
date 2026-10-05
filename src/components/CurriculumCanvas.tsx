@@ -177,10 +177,16 @@ const CurriculumCanvasInner: React.FC<CurriculumCanvasProps> = ({
 
   // Instant node selection on tap (0ms delay, no double-tap wait)
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: { id: string }) => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setSelectedId(prev => (prev === node.id ? null : node.id));
   }, []);
 
   const handlePaneClick = useCallback(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setSelectedId(null);
   }, []);
 
@@ -461,7 +467,10 @@ const CurriculumCanvasInner: React.FC<CurriculumCanvasProps> = ({
         panOnDrag={true}
         nodesDraggable={false}
         nodesConnectable={false}
+        nodesFocusable={false}
+        edgesFocusable={false}
         elementsSelectable={false}
+        disableKeyboardA11y={true}
         nodeClickDistance={8}
         paneClickDistance={8}
       >

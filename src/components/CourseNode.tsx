@@ -83,7 +83,7 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
 
   return (
     <div
-      className={`relative ${dimensions} rounded-xl border-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
+      className={`relative ${dimensions} rounded-xl border-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md outline-none focus:outline-none active:outline-none ${statusStyles} ${highlightStyles} ${opacityStyles}`}
       title={
         highlightRole === 'selected'
           ? `${item.name} (${status}) — Atajos: WASD/Flechas (Mover), C (Completada), P (Cursando), X (Suficiencia), R (Base), Esc (Deseleccionar)`

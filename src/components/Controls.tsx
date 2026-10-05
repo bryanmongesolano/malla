@@ -350,6 +350,9 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           return;
         }
         if (selectedItem) {
+          if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
           onDeselect?.();
           return;
         }
@@ -372,6 +375,9 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
 
         const nextNode = findNextNodeInDirection(currentNode, nodes, navDir, getNodesBounds);
         if (nextNode) {
+          if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
           onSelectNode(nextNode.id);
         }
         return;
