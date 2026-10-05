@@ -20,6 +20,7 @@ import type { FilterMode } from './Header.js';
 import type { LayoutMode } from '../layout.js';
 import type { CurriculumItem, CourseStatus } from '@shared/types.js';
 import { isElectiveBlock } from '@shared/index.js';
+import { ActionTooltip } from './ActionTooltip.js';
 
 export interface CourseActionTransition {
   allowed: boolean;
@@ -356,38 +357,51 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
       {/* Left Cluster: Simular, Filtrar, Vista */}
       <div className="absolute bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] left-3 sm:left-5 z-30 flex items-center gap-2.5 nodrag nopan">
         {/* 1. Simulate Button */}
-        {!isSimulationMode ? (
-          <button
-            onClick={onStartSimulation}
-            className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
-            title="Simular avance (M)"
-          >
-            <FlaskConical className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          </button>
-        ) : (
-          <button
-            onClick={onExitSimulation}
-            className="h-12 min-h-[48px] px-3.5 rounded-2xl border border-amber-500/70 bg-amber-500/20 text-amber-700 dark:text-amber-300 shadow-xl backdrop-blur-md flex items-center gap-2 transition-all cursor-pointer active:scale-95 ring-1 ring-amber-500/40"
-            title="Volver al avance real (M)"
-          >
-            <Undo2 className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span className="text-xs sm:text-sm font-semibold">Volver</span>
-          </button>
-        )}
+        {/* 1. Simulate Button */}
+        <ActionTooltip
+          label={isSimulationMode ? "Volver al avance real" : "Simular avance"}
+          shortcut="M"
+          side="top"
+          align="start"
+        >
+          {!isSimulationMode ? (
+            <button
+              onClick={onStartSimulation}
+              className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
+            >
+              <FlaskConical className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            </button>
+          ) : (
+            <button
+              onClick={onExitSimulation}
+              className="h-12 min-h-[48px] px-3.5 rounded-2xl border border-amber-500/70 bg-amber-500/20 text-amber-700 dark:text-amber-300 shadow-xl backdrop-blur-md flex items-center gap-2 transition-all cursor-pointer active:scale-95 ring-1 ring-amber-500/40"
+            >
+              <Undo2 className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold">Volver</span>
+            </button>
+          )}
+        </ActionTooltip>
 
         {/* 2. Filter Button (icon only, active glow when not 'todas', menu opens upwards) */}
         <div className="relative" ref={filterRef}>
-          <button
-            onClick={() => setFilterMenuOpen(prev => !prev)}
-            className={`w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border transition-all cursor-pointer shadow-xl backdrop-blur-md active:scale-95 ${
-              filterMode !== 'todas'
-                ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border-cyan-500/70 ring-1 ring-cyan-500/40'
-                : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-300'
-            }`}
-            title="Filtrar materias (F)"
+          <ActionTooltip
+            label="Filtrar materias"
+            shortcut="F"
+            side="top"
+            align="center"
+            disabled={filterMenuOpen}
           >
-            <Filter className="w-5 h-5" />
-          </button>
+            <button
+              onClick={() => setFilterMenuOpen(prev => !prev)}
+              className={`w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border transition-all cursor-pointer shadow-xl backdrop-blur-md active:scale-95 ${
+                filterMode !== 'todas'
+                  ? 'bg-cyan-500/20 text-cyan-600 dark:text-cyan-300 border-cyan-500/70 ring-1 ring-cyan-500/40'
+                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              <Filter className="w-5 h-5" />
+            </button>
+          </ActionTooltip>
 
           {filterMenuOpen && (
             <div className="absolute left-0 bottom-full mb-2.5 z-50 w-52 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-150">
@@ -421,167 +435,187 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
         </div>
 
         {/* 3. Layout Mode Toggle (icon only: Árbol / Horizontal) */}
-        <button
-          onClick={() => onSetLayoutMode(layoutMode === 'tree' ? 'horizontal' : 'tree')}
-          className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
-          title={layoutMode === 'tree' ? 'Cambiar a vista Horizontal (L)' : 'Cambiar a vista Árbol (L)'}
+        <ActionTooltip
+          label={layoutMode === 'tree' ? 'Vista Horizontal' : 'Vista Árbol'}
+          shortcut="L"
+          side="top"
+          align="center"
         >
-          {layoutMode === 'tree' ? (
-            <GitFork className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          ) : (
-            <Columns className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          )}
-        </button>
+          <button
+            onClick={() => onSetLayoutMode(layoutMode === 'tree' ? 'horizontal' : 'tree')}
+            className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
+          >
+            {layoutMode === 'tree' ? (
+              <GitFork className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            ) : (
+              <Columns className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            )}
+          </button>
+        </ActionTooltip>
       </div>
 
       {/* Right Cluster: Selection Actions (above) and Zoom (below) */}
       <div className="absolute bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-3 sm:right-5 z-30 flex flex-col items-center gap-2 nodrag nopan">
         {/* If an elective block is selected: single button to open sheet */}
         {selectedItem && isElectiveBlock(selectedItem) && (
-          <button
-            onClick={onOpenElectiveSheet}
-            className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/60 rounded-2xl shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ring-1 ring-purple-500/30 animate-in fade-in zoom-in-95 duration-200"
-            title="Elegir materia optativa (E)"
-          >
-            <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-          </button>
+          <ActionTooltip label="Elegir optativa" shortcut="E" side="left">
+            <button
+              onClick={onOpenElectiveSheet}
+              className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/60 rounded-2xl shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ring-1 ring-purple-500/30 animate-in fade-in zoom-in-95 duration-200"
+            >
+              <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </button>
+          </ActionTooltip>
         )}
 
         {/* If a standard course is selected: 4 vertical buttons in requested order */}
         {selectedItem && !isElectiveBlock(selectedItem) && (
           <div className="flex flex-col items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
             {/* 1. Estado Base (Clock celeste si prereqs cumplidos, Lock gris si bloqueada) */}
-            <button
-              onClick={() => {
-                if (selectedStatus === baseStatus) return;
-                if (!transitions?.base.allowed) {
-                  onShowAlert?.(transitions?.base.reason || 'No se puede cambiar a este estado.');
-                  return;
-                }
-                onActionStatus?.(baseStatus);
-              }}
-              className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
-                selectedStatus === baseStatus
-                  ? isPrereqsMet
-                    ? 'bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-500/70 ring-1 ring-sky-500/40'
-                    : 'bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-400 dark:border-slate-600 ring-1 ring-slate-400'
-                  : transitions?.base.allowed
-                  ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
-                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
-              }`}
-              title={isPrereqsMet ? 'Disponible (D)' : 'Bloqueada (D)'}
+            <ActionTooltip
+              label={isPrereqsMet ? 'Disponible' : 'Bloqueada'}
+              shortcut="D"
+              side="left"
             >
-              {isPrereqsMet ? (
-                <Clock className="w-5 h-5 text-sky-500 dark:text-sky-400" />
-              ) : (
-                <Lock className="w-5 h-5 text-slate-400 dark:text-slate-500" />
-              )}
-            </button>
+              <button
+                onClick={() => {
+                  if (selectedStatus === baseStatus) return;
+                  if (!transitions?.base.allowed) {
+                    onShowAlert?.(transitions?.base.reason || 'No se puede cambiar a este estado.');
+                    return;
+                  }
+                  onActionStatus?.(baseStatus);
+                }}
+                className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
+                  selectedStatus === baseStatus
+                    ? isPrereqsMet
+                      ? 'bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-500/70 ring-1 ring-sky-500/40'
+                      : 'bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-400 dark:border-slate-600 ring-1 ring-slate-400'
+                    : transitions?.base.allowed
+                    ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
+                    : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
+                }`}
+              >
+                {isPrereqsMet ? (
+                  <Clock className="w-5 h-5 text-sky-500 dark:text-sky-400" />
+                ) : (
+                  <Lock className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                )}
+              </button>
+            </ActionTooltip>
 
             {/* 2. Suficiencia (GraduationCap morado) */}
-            <button
-              onClick={() => {
-                if (selectedStatus === 'suficiencia') {
-                  // Toggle off -> revert to base
-                  if (!transitions?.base.allowed) {
-                    onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar suficiencia.');
+            <ActionTooltip label="Suficiencia" shortcut="S" side="left">
+              <button
+                onClick={() => {
+                  if (selectedStatus === 'suficiencia') {
+                    // Toggle off -> revert to base
+                    if (!transitions?.base.allowed) {
+                      onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar suficiencia.');
+                      return;
+                    }
+                    onActionStatus?.(baseStatus);
                     return;
                   }
-                  onActionStatus?.(baseStatus);
-                  return;
-                }
-                if (!transitions?.suficiencia.allowed) {
-                  onShowAlert?.(transitions?.suficiencia.reason || 'No se puede marcar suficiencia.');
-                  return;
-                }
-                onActionStatus?.('suficiencia');
-              }}
-              className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
-                selectedStatus === 'suficiencia'
-                  ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/70 ring-1 ring-purple-500/40'
-                  : transitions?.suficiencia.allowed
-                  ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
-                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
-              }`}
-              title="Suficiencia (S)"
-            >
-              <GraduationCap className="w-5 h-5 text-purple-500 dark:text-purple-400" />
-            </button>
+                  if (!transitions?.suficiencia.allowed) {
+                    onShowAlert?.(transitions?.suficiencia.reason || 'No se puede marcar suficiencia.');
+                    return;
+                  }
+                  onActionStatus?.('suficiencia');
+                }}
+                className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
+                  selectedStatus === 'suficiencia'
+                    ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/70 ring-1 ring-purple-500/40'
+                    : transitions?.suficiencia.allowed
+                    ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
+                    : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
+                }`}
+              >
+                <GraduationCap className="w-5 h-5 text-purple-500 dark:text-purple-400" />
+              </button>
+            </ActionTooltip>
 
             {/* 3. Cursando (Play ámbar) */}
-            <button
-              onClick={() => {
-                if (selectedStatus === 'cursando') {
-                  // Toggle off -> revert to base
-                  if (!transitions?.base.allowed) {
-                    onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar cursando.');
+            <ActionTooltip label="Cursando" shortcut="P" side="left">
+              <button
+                onClick={() => {
+                  if (selectedStatus === 'cursando') {
+                    // Toggle off -> revert to base
+                    if (!transitions?.base.allowed) {
+                      onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar cursando.');
+                      return;
+                    }
+                    onActionStatus?.(baseStatus);
                     return;
                   }
-                  onActionStatus?.(baseStatus);
-                  return;
-                }
-                if (!transitions?.cursando.allowed) {
-                  onShowAlert?.(transitions?.cursando.reason || 'No se puede marcar cursando.');
-                  return;
-                }
-                onActionStatus?.('cursando');
-              }}
-              className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
-                selectedStatus === 'cursando'
-                  ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/70 ring-1 ring-amber-500/40'
-                  : transitions?.cursando.allowed
-                  ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
-                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
-              }`}
-              title="Cursando (P)"
-            >
-              <Play className="w-5 h-5 text-amber-500 dark:text-amber-400 fill-amber-500/20" />
-            </button>
+                  if (!transitions?.cursando.allowed) {
+                    onShowAlert?.(transitions?.cursando.reason || 'No se puede marcar cursando.');
+                    return;
+                  }
+                  onActionStatus?.('cursando');
+                }}
+                className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
+                  selectedStatus === 'cursando'
+                    ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/70 ring-1 ring-amber-500/40'
+                    : transitions?.cursando.allowed
+                    ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
+                    : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
+                }`}
+              >
+                <Play className="w-5 h-5 text-amber-500 dark:text-amber-400 fill-amber-500/20" />
+              </button>
+            </ActionTooltip>
 
             {/* 4. Completada (Check verde) */}
-            <button
-              onClick={() => {
-                if (selectedStatus === 'completada') {
-                  // Toggle off -> revert to base
-                  if (!transitions?.base.allowed) {
-                    onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar completada.');
+            <ActionTooltip label="Completada" shortcut="C" side="left">
+              <button
+                onClick={() => {
+                  if (selectedStatus === 'completada') {
+                    // Toggle off -> revert to base
+                    if (!transitions?.base.allowed) {
+                      onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar completada.');
+                      return;
+                    }
+                    onActionStatus?.(baseStatus);
                     return;
                   }
-                  onActionStatus?.(baseStatus);
-                  return;
-                }
-                if (!transitions?.completada.allowed) {
-                  onShowAlert?.(transitions?.completada.reason || 'No se puede marcar completada.');
-                  return;
-                }
-                onActionStatus?.('completada');
-              }}
-              className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
-                selectedStatus === 'completada'
-                  ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/70 ring-1 ring-emerald-500/40'
-                  : transitions?.completada.allowed
-                  ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
-                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
-              }`}
-              title="Completada (C)"
-            >
-              <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 stroke-[2.5]" />
-            </button>
+                  if (!transitions?.completada.allowed) {
+                    onShowAlert?.(transitions?.completada.reason || 'No se puede marcar completada.');
+                    return;
+                  }
+                  onActionStatus?.('completada');
+                }}
+                className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
+                  selectedStatus === 'completada'
+                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/70 ring-1 ring-emerald-500/40'
+                    : transitions?.completada.allowed
+                    ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
+                    : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
+                }`}
+              >
+                <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 stroke-[2.5]" />
+              </button>
+            </ActionTooltip>
           </div>
         )}
 
         {/* 5. Zoom / Reset View Toggle Button (Reactive) */}
-        <button
-          onClick={handleToggleView}
-          className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
-          title={isZoomedIn ? "Mostrar toda la malla (Z)" : "Acercar vista (Z)"}
+        <ActionTooltip
+          label={isZoomedIn ? "Mostrar toda la malla" : "Acercar vista"}
+          shortcut="Z"
+          side="left"
         >
-          {isZoomedIn ? (
-            <Crosshair className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          ) : (
-            <ZoomIn className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          )}
-        </button>
+          <button
+            onClick={handleToggleView}
+            className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
+          >
+            {isZoomedIn ? (
+              <Crosshair className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            ) : (
+              <ZoomIn className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            )}
+          </button>
+        </ActionTooltip>
       </div>
     </>
   );
