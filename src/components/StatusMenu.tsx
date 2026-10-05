@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Clock, Play, GraduationCap, Lock, X } from 'lucide-react';
+import { Check, Clock, Play, GraduationCap, Lock } from 'lucide-react';
 import type { StandardCourse, CourseStatus, StoredStatus } from '@shared/types.js';
 import { canTransition } from '@shared/transitions.js';
 import { arePrereqsMet } from '@shared/status.js';
@@ -52,27 +52,12 @@ export const StatusMenu: React.FC<StatusMenuProps> = ({
 
       <div
         style={style}
-        className="relative z-10 w-full sm:w-[290px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl animate-in fade-in slide-in-from-bottom sm:slide-in-from-left duration-200"
+        className="relative z-10 w-full sm:w-[280px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-t-3xl sm:rounded-2xl p-3.5 sm:p-4 shadow-2xl animate-in fade-in slide-in-from-bottom sm:slide-in-from-left duration-200"
       >
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div>
-            <span className="text-[11px] font-mono text-cyan-600 dark:text-cyan-400 font-semibold">{item.id}</span>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-tight">
-              {item.name}
-            </h3>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              {item.credits} créditos · Cuatri {item.period}
-            </span>
-          </div>
-          <button
-            onClick={onClose}
-            className="min-w-[42px] min-h-[42px] flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Mobile drag handle */}
+        <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
 
-        <div className="space-y-2.5 mt-4">
+        <div className="space-y-2.5">
           {/* 1. Base status: Disponible o Bloqueada */}
           {isPrereqsMet ? (
             <button

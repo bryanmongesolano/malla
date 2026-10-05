@@ -92,33 +92,54 @@ export const Header: React.FC<HeaderProps> = ({
   const currentFilterLabel = filterOptions.find(o => o.id === filterMode)?.label || 'Filtrar';
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3 py-2 sm:px-5 sm:py-2.5 transition-colors duration-200">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 max-w-7xl mx-auto">
-        {/* Left: Title + % Bar + Counters */}
-        <div className="flex flex-col gap-1.5 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 tracking-tight truncate">
-              Ingeniería del Software
-            </span>
-          </div>
+    <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-950/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-3.5 py-2.5 sm:px-5 sm:py-3 transition-colors duration-200">
+      <div className="flex flex-col gap-2 max-w-7xl mx-auto">
+        {/* Row 1: Career Title (left) & Settings + Theme (right) */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100 tracking-tight truncate">
+            Ingeniería del Software
+          </span>
 
-          {/* Progress Bar + % */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 sm:w-64 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Settings button */}
+            <button
+              onClick={onOpenSettings}
+              className="min-w-[42px] min-h-[42px] p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer shadow-sm active:scale-95"
+              title="Configurar simulación"
+            >
+              <Sliders className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            </button>
+
+            {/* Theme toggle */}
+            <button
+              onClick={onToggleTheme}
+              className="min-w-[42px] min-h-[42px] p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer shadow-sm active:scale-95"
+              title={isDark ? 'Modo claro' : 'Modo oscuro'}
+            >
+              {isDark ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: Progress bar, Credits, and Status Counters */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-900/60">
+          {/* Progress bar + % */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex-1 sm:w-60 md:w-72 h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 transition-all duration-500 rounded-full"
                 style={{ width: `${overall.percentCompleted}%` }}
               />
             </div>
-            <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
               {overall.percentCompleted}%
             </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 hidden md:inline">
-              ({overall.completedCredits}/{overall.totalCredits} créditos)
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
+              ({overall.completedCredits}/{overall.totalCredits} cr.)
             </span>
           </div>
 
-          {/* Counters row */}
+          {/* Status chips + Graduation estimate */}
           <div className="flex items-center gap-1.5 sm:gap-2 text-xs flex-wrap">
             <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-100 border border-emerald-300 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-900/60 px-2 py-0.5 rounded-md font-medium" title="Completadas">
               <Check className="w-3.5 h-3.5" />
@@ -144,7 +165,7 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
 
             {/* Estimated graduation pill */}
-            <div className="inline-flex items-center gap-1.5 ml-1 px-2.5 py-0.5 rounded-md bg-purple-100 border border-purple-300 text-purple-900 dark:bg-purple-950/40 dark:border-purple-800/60 dark:text-purple-300 text-xs font-semibold">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-purple-100 border border-purple-300 text-purple-900 dark:bg-purple-950/40 dark:border-purple-800/60 dark:text-purple-300 text-xs font-semibold">
               <Calendar className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               <span>
                 ≈ {simulation.periodsRemaining} cuatris · {simulation.estimatedGraduationDate}
@@ -153,27 +174,29 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right: Action buttons (larger for finger accessibility) */}
-        <div className="flex items-center gap-2 self-end sm:self-center">
+        {/* Row 3: Toolbar (Filter, Simulation, Layout view) */}
+        <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-900/60">
           {/* Selectable Filter Menu Dropdown */}
-          <div className="relative" ref={filterRef}>
+          <div className="relative flex-1 sm:flex-initial" ref={filterRef}>
             <button
               onClick={() => setFilterMenuOpen(prev => !prev)}
-              className={`min-h-[42px] px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
+              className={`w-full min-h-[42px] px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-semibold flex items-center justify-between sm:justify-start gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
                 filterMode !== 'todas'
                   ? 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border-cyan-500/70 ring-1 ring-cyan-500/40'
                   : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-800 dark:hover:bg-slate-800'
               }`}
               title="Seleccionar filtro de materias"
             >
-              <Filter className="w-4 h-4 text-cyan-600 dark:text-cyan-400 flex-shrink-0" />
-              <span className="truncate max-w-[130px] sm:max-w-none">{currentFilterLabel}</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${filterMenuOpen ? 'rotate-180' : ''}`} />
+              <div className="flex items-center gap-2 truncate">
+                <Filter className="w-4 h-4 text-cyan-600 dark:text-cyan-400 flex-shrink-0" />
+                <span className="truncate">{currentFilterLabel}</span>
+              </div>
+              <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${filterMenuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown menu */}
             {filterMenuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 z-50 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 shadow-2xl animate-in fade-in duration-150">
+              <div className="absolute left-0 top-full mt-1.5 z-50 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 shadow-2xl animate-in fade-in duration-150">
                 <div className="px-3 py-1.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   Filtrar vista
                 </div>
@@ -210,52 +233,34 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onStartSimulation}
             disabled={isSimulationMode}
-            className={`min-h-[42px] px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
+            className={`min-h-[42px] px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 flex-1 sm:flex-initial ${
               isSimulationMode
                 ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/60 ring-1 ring-amber-500/40 opacity-90 cursor-default'
                 : 'bg-purple-100 text-purple-900 border-purple-300 hover:bg-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/80 dark:hover:bg-purple-900/60'
             }`}
             title={isSimulationMode ? 'Modo simulación activo' : 'Iniciar modo de simulación y pruebas'}
           >
-            <FlaskConical className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            <span className="hidden sm:inline">Simular</span>
+            <FlaskConical className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+            <span>Simular</span>
           </button>
 
           {/* Layout mode button */}
           <button
             onClick={() => onSetLayoutMode(layoutMode === 'tree' ? 'cuatrimestres' : 'tree')}
-            className="min-h-[42px] px-3.5 py-2 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95"
+            className="min-h-[42px] px-3.5 py-2 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 flex-1 sm:flex-initial"
             title={layoutMode === 'tree' ? 'Cambiar a vista por Cuatrimestres' : 'Cambiar a vista Árbol'}
           >
             {layoutMode === 'tree' ? (
               <>
-                <GitFork className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                <span className="hidden sm:inline">Árbol</span>
+                <GitFork className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                <span>Árbol</span>
               </>
             ) : (
               <>
-                <Columns className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                <span className="hidden sm:inline">Cuatris</span>
+                <Columns className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                <span>Cuatris</span>
               </>
             )}
-          </button>
-
-          {/* Settings button */}
-          <button
-            onClick={onOpenSettings}
-            className="min-w-[42px] min-h-[42px] p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer shadow-sm active:scale-95"
-            title="Configurar simulación"
-          >
-            <Sliders className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-          </button>
-
-          {/* Theme toggle */}
-          <button
-            onClick={onToggleTheme}
-            className="min-w-[42px] min-h-[42px] p-2.5 rounded-xl border border-slate-300 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer shadow-sm active:scale-95"
-            title={isDark ? 'Modo claro' : 'Modo oscuro'}
-          >
-            {isDark ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
           </button>
         </div>
       </div>
