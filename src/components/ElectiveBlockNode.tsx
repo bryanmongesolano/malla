@@ -1,12 +1,12 @@
 import React, { memo } from 'react';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import type { ElectiveBlock, CourseStatus } from '@shared/types.js';
-import { useNodeGestures } from '../hooks/useNodeGestures.js';
 
 export interface ElectiveBlockNodeData extends Record<string, unknown> {
   item: ElectiveBlock;
   status: CourseStatus;
   completedCount: number;
+  isUnlockedByCursando?: boolean;
   isDimmed: boolean;
   isFiltered: boolean;
   highlightRole: 'selected' | 'ancestor' | 'dependent' | null;
@@ -17,20 +17,18 @@ export interface ElectiveBlockNodeData extends Record<string, unknown> {
 export type ElectiveBlockNodeType = Node<ElectiveBlockNodeData, 'electiveBlock'>;
 
 export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType>) => {
-  const { item, status, completedCount, isDimmed, isFiltered, highlightRole, onSelect, onOpenSheet } = data;
+  const {
+    item,
+    status,
+    completedCount,
+    isUnlockedByCursando,
+    isDimmed,
+    isFiltered,
+    highlightRole,
+    onSelect,
+    onOpenSheet
+  } = data;
   const nodeRef = React.useRef<HTMLDivElement>(null);
-
-  const gestures = useNodeGestures({
-    onSingleTap: () => {
-      onSelect(item.id);
-    },
-    onDoubleTap: () => {
-      onOpenSheet(item.id);
-    },
-    onLongPress: () => {
-      onOpenSheet(item.id);
-    }
-  });
 
   let statusStyles = '';
   switch (status) {
@@ -45,7 +43,11 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
       break;
     case 'bloqueada':
     default:
-      statusStyles = 'bg-slate-200/90 text-slate-500 border-slate-300 dark:bg-slate-900/90 dark:text-slate-400 dark:border-slate-700/80';
+      if (isUnlockedByCursando) {
+        statusStyles = 'bg-amber-50/80 text-amber-950 border-amber-400/90 border-dashed dark:bg-amber-950/30 dark:text-amber-200/90 dark:border-amber-500/60 dark:border-dashed shadow-sm';
+      } else {
+        statusStyles = 'bg-slate-200/90 text-slate-500 border-slate-300 dark:bg-slate-900/90 dark:text-slate-400 dark:border-slate-700/80';
+      }
       break;
   }
 
@@ -68,14 +70,9 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
   return (
     <div
       ref={nodeRef}
-      {...gestures}
       onClick={() => onSelect(item.id)}
-      onDoubleClick={(e) => {
-        e.stopPropagation();
-        onOpenSheet(item.id);
-      }}
-      className={`relative w-[184px] min-h-[76px] rounded-xl border-2 border-dashed px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md nodrag nopan ${statusStyles} ${highlightStyles} ${opacityStyles}`}
-      title={`${item.name} (${completedCount}/${item.required}) — Tap para seleccionar, Doble-tap para ver materias`}
+      className={`relative w-[184px] min-h-[76px] rounded-xl border-2 border-dashed px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
+      title={`${item.name} (${completedCount}/${item.required}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`}
     >
       <Handle
         type="target"
@@ -90,13 +87,21 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
         {completedCount} / {item.required}
       </span>
 
+      {/* Badge if unlocked by current cursando courses */}
+      {status === 'bloqueada' && isUnlockedByCursando && highlightRole !== 'selected' && (
+        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 font-semibold mt-0.5 pointer-events-none">
+          Próxima
+        </span>
+      )}
+
+      {/* Action button shown when selected */}
       {highlightRole === 'selected' && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             onOpenSheet(item.id);
           }}
-          className="mt-1 px-2.5 py-0.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold shadow-md cursor-pointer flex items-center gap-1 transition-transform active:scale-95"
+          className="mt-1 px-2.5 py-1 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold shadow-md cursor-pointer flex items-center gap-1 transition-transform active:scale-95 nodrag nopan"
         >
           <span>Ver materias</span>
         </button>

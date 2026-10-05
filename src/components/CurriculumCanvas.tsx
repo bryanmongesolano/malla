@@ -6,7 +6,7 @@ import {
   type NodeTypes
 } from '@xyflow/react';
 import type { StandardCourse, ElectiveBlock, CurriculumItem } from '@shared/types.js';
-import { CurriculumModel, isElectiveBlock } from '@shared/curriculum.js';
+import { CurriculumModel, isElectiveBlock, getCoursesUnlockedByCursando } from '@shared/index.js';
 import { getAllAncestors, getDirectDependents } from '@shared/graph.js';
 import { buildNodesAndEdges, type LayoutMode } from '../layout.js';
 import { CourseNode } from './CourseNode.js';
@@ -65,6 +65,11 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     return { ancestors: anc, directDependents: dep };
   }, [selectedId, model]);
 
+  // Courses unlocked hypothetically when currently "cursando" courses finish
+  const unlockedByCursando = useMemo(() => {
+    return getCoursesUnlockedByCursando(model, state.progress);
+  }, [model, state.progress]);
+
   // Handlers for nodes
   const handleSelect = useCallback((id: string) => {
     setSelectedId(prev => (prev === id ? null : id));
@@ -90,10 +95,11 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
       const id = node.id;
       const status = state.statuses[id] || 'bloqueada';
       const item = node.data.item as CurriculumItem;
+      const isUnlockedByCursando = unlockedByCursando.has(id);
 
       let isFiltered = false;
       if (filterMode === 'disponibles') {
-        isFiltered = status !== 'disponible';
+        isFiltered = status !== 'disponible' && !isUnlockedByCursando;
       } else if (filterMode === 'ocultar_completadas') {
         isFiltered = status === 'completada';
       }
@@ -120,6 +126,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
             completedCount,
             isDimmed,
             isFiltered,
+            isUnlockedByCursando,
             highlightRole,
             onSelect: handleSelect,
             onOpenSheet: handleOpenSheet
@@ -134,6 +141,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           status,
           isDimmed,
           isFiltered,
+          isUnlockedByCursando,
           highlightRole,
           onSelect: handleSelect,
           onOpenMenu: handleOpenMenu
@@ -147,6 +155,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     ancestors,
     directDependents,
     filterMode,
+    unlockedByCursando,
     handleSelect,
     handleOpenMenu,
     handleOpenSheet
@@ -223,26 +232,12 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         edges={displayEdges}
         nodeTypes={nodeTypes}
         onNodeClick={(_event, node) => handleSelect(node.id)}
-        onNodeDoubleClick={(_event, node) => {
-          const item = model.getItem(node.id);
-          if (item) {
-            if (isElectiveBlock(item)) {
-              setSheetBlock(item);
-            } else {
-              const domNode = document.querySelector(`[data-id="${node.id}"]`);
-              const rect = domNode
-                ? domNode.getBoundingClientRect()
-                : new DOMRect(window.innerWidth / 2, window.innerHeight / 2, 0, 0);
-              setMenuCourse({ item, anchor: rect });
-            }
-          }
-        }}
         onPaneClick={() => setSelectedId(null)}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.2}
         maxZoom={2.5}
-        zoomOnDoubleClick={false} // Disabled so double tap changes course state
+        zoomOnDoubleClick={false}
         panOnScroll={false}
         nodesDraggable={false}
         nodesConnectable={false}

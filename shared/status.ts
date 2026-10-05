@@ -167,3 +167,40 @@ export function computeOverallProgress(
     completedCredits
   };
 }
+
+/**
+ * Identifies courses that are currently 'bloqueada' but will be unlocked
+ * as soon as the currently 'cursando' courses are completed.
+ */
+export function getCoursesUnlockedByCursando(
+  model: CurriculumModel,
+  progress: Record<string, StoredStatus>
+): Set<string> {
+  const result = new Set<string>();
+  const currentStatuses = computeAllStatuses(model, progress);
+
+  const hasCursando = Object.values(progress).some(s => s === 'cursando');
+  if (!hasCursando) return result;
+
+  // Hypothetical progress assuming all currently cursando are approved
+  const hypotheticalProgress: Record<string, StoredStatus> = {};
+  for (const [id, s] of Object.entries(progress)) {
+    if (s === 'completada' || s === 'cursando') {
+      hypotheticalProgress[id] = 'completada';
+    }
+  }
+
+  const hypotheticalStatuses = computeAllStatuses(model, hypotheticalProgress);
+
+  for (const item of model.getAllItems()) {
+    // If currently blocked, but becomes disponible if cursando courses are completed
+    if (
+      currentStatuses[item.id] === 'bloqueada' &&
+      hypotheticalStatuses[item.id] === 'disponible'
+    ) {
+      result.add(item.id);
+    }
+  }
+
+  return result;
+}

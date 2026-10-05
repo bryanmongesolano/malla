@@ -10,7 +10,8 @@ import {
   getDirectPrereqs,
   getAllAncestors,
   getDirectDependents,
-  getAllDependents
+  getAllDependents,
+  getCoursesUnlockedByCursando
 } from '../shared/index.js';
 import type { Curriculum, StoredStatus } from '../shared/types.js';
 
@@ -197,5 +198,16 @@ describe('Graduation Simulator', () => {
     const res2 = simulateGraduation(model, progress2, 4, refDate);
 
     expect(res2.periodsRemaining).toBeLessThan(res1.periodsRemaining);
+  });
+
+  it('correctly detects courses that will be unlocked when currently cursando courses are completed', () => {
+    // When SOFT-01 is cursando, SOFT-02 should be flagged as willUnlockByCursando
+    const progress: Record<string, StoredStatus> = {
+      'SOFT-01': 'cursando'
+    };
+    const unlocked = getCoursesUnlockedByCursando(model, progress);
+    expect(unlocked.has('SOFT-02')).toBe(true);
+    // SOFT-07 requires SOFT-02, which is not yet cursando/completed, so SOFT-07 must NOT be in unlocked
+    expect(unlocked.has('SOFT-07')).toBe(false);
   });
 });

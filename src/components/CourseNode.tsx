@@ -1,11 +1,11 @@
 import React, { memo } from 'react';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import type { StandardCourse, CourseStatus } from '@shared/types.js';
-import { useNodeGestures } from '../hooks/useNodeGestures.js';
 
 export interface CourseNodeData extends Record<string, unknown> {
   item: StandardCourse;
   status: CourseStatus;
+  isUnlockedByCursando?: boolean;
   isDimmed: boolean;
   isFiltered: boolean;
   highlightRole: 'selected' | 'ancestor' | 'dependent' | null;
@@ -16,24 +16,8 @@ export interface CourseNodeData extends Record<string, unknown> {
 export type CourseNodeType = Node<CourseNodeData, 'course'>;
 
 export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
-  const { item, status, isDimmed, isFiltered, highlightRole, onSelect, onOpenMenu } = data;
+  const { item, status, isUnlockedByCursando, isDimmed, isFiltered, highlightRole, onSelect, onOpenMenu } = data;
   const nodeRef = React.useRef<HTMLDivElement>(null);
-
-  const gestures = useNodeGestures({
-    onSingleTap: () => {
-      onSelect(item.id);
-    },
-    onDoubleTap: () => {
-      if (nodeRef.current) {
-        onOpenMenu(item.id, nodeRef.current.getBoundingClientRect());
-      }
-    },
-    onLongPress: () => {
-      if (nodeRef.current) {
-        onOpenMenu(item.id, nodeRef.current.getBoundingClientRect());
-      }
-    }
-  });
 
   // Base state styles (background, text, border)
   let statusStyles = '';
@@ -49,7 +33,12 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
       break;
     case 'bloqueada':
     default:
-      statusStyles = 'bg-slate-200/90 text-slate-500 border-slate-300 dark:bg-slate-900/90 dark:text-slate-400 dark:border-slate-700/80';
+      if (isUnlockedByCursando) {
+        // Desbloqueable al aprobar lo que está cursando: tono ámbar más discreto
+        statusStyles = 'bg-amber-50/80 text-amber-950 border-amber-400/90 border-dashed dark:bg-amber-950/30 dark:text-amber-200/90 dark:border-amber-500/60 dark:border-dashed shadow-sm';
+      } else {
+        statusStyles = 'bg-slate-200/90 text-slate-500 border-slate-300 dark:bg-slate-900/90 dark:text-slate-400 dark:border-slate-700/80';
+      }
       break;
   }
 
@@ -74,16 +63,9 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
   return (
     <div
       ref={nodeRef}
-      {...gestures}
       onClick={() => onSelect(item.id)}
-      onDoubleClick={(e) => {
-        e.stopPropagation();
-        if (nodeRef.current) {
-          onOpenMenu(item.id, nodeRef.current.getBoundingClientRect());
-        }
-      }}
-      className={`relative w-[184px] min-h-[76px] rounded-xl border-2 px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md nodrag nopan ${statusStyles} ${highlightStyles} ${opacityStyles}`}
-      title={`${item.name} (${status}) — Tap para seleccionar, Doble-tap para cambiar estado`}
+      className={`relative w-[184px] min-h-[76px] rounded-xl border-2 px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
+      title={`${item.name} (${status}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`}
     >
       <Handle
         type="target"
@@ -95,6 +77,14 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
         {item.name}
       </span>
 
+      {/* Badge if unlocked by current cursando courses */}
+      {status === 'bloqueada' && isUnlockedByCursando && highlightRole !== 'selected' && (
+        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 font-semibold mt-0.5 pointer-events-none">
+          Próxima
+        </span>
+      )}
+
+      {/* Action button shown when selected */}
       {highlightRole === 'selected' && (
         <button
           onClick={(e) => {
@@ -103,7 +93,7 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
               onOpenMenu(item.id, nodeRef.current.getBoundingClientRect());
             }
           }}
-          className="mt-1.5 px-2.5 py-0.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold shadow-md cursor-pointer flex items-center gap-1 transition-transform active:scale-95"
+          className="mt-1.5 px-2.5 py-1 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold shadow-md cursor-pointer flex items-center gap-1 transition-transform active:scale-95 nodrag nopan"
         >
           <span>Cambiar estado</span>
         </button>
