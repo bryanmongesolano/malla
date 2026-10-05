@@ -6,6 +6,7 @@ export interface ElectiveBlockNodeData extends Record<string, unknown> {
   item: ElectiveBlock;
   status: CourseStatus;
   completedCount: number;
+  isPrereqsMet?: boolean;
   isUnlockedByCursando?: boolean;
   isDimmed: boolean;
   isFiltered: boolean;
@@ -20,6 +21,7 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
     item,
     status,
     completedCount,
+    isPrereqsMet,
     isUnlockedByCursando,
     isDimmed,
     isFiltered,
@@ -40,7 +42,11 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
       statusStyles = 'bg-sky-100/95 text-sky-950 border-sky-500 shadow-sky-900/10 dark:bg-sky-950/90 dark:text-sky-100 dark:border-sky-500 dark:shadow-sky-950/40';
       break;
     case 'suficiencia':
-      statusStyles = 'bg-purple-100/95 text-purple-950 border-purple-500 shadow-purple-900/10 ring-1 ring-purple-400 dark:bg-purple-950/90 dark:text-purple-100 dark:border-purple-500 dark:shadow-purple-950/40 dark:ring-purple-400/40';
+      if (isPrereqsMet === false) {
+        statusStyles = 'bg-purple-50/75 text-purple-900/85 border-purple-300/80 border-dashed dark:bg-purple-950/35 dark:text-purple-300/85 dark:border-purple-600/50 dark:border-dashed shadow-sm';
+      } else {
+        statusStyles = 'bg-purple-100/95 text-purple-950 border-purple-500 shadow-purple-900/10 ring-1 ring-purple-400 dark:bg-purple-950/90 dark:text-purple-100 dark:border-purple-500 dark:shadow-purple-950/40 dark:ring-purple-400/40';
+      }
       break;
     case 'bloqueada':
     default:
@@ -72,7 +78,7 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
     <div
       ref={nodeRef}
       className={`relative w-[184px] min-h-[76px] rounded-xl border-2 border-dashed px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
-      title={`${item.name} (${completedCount}/${item.required}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`}
+      title={`${item.name} (${completedCount}/${item.required}${isPrereqsMet === false && status === 'suficiencia' ? ' [Requisitos pendientes]' : ''}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`}
     >
       <Handle
         type="target"
@@ -89,8 +95,14 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
 
       {/* Badge if marked as suficiencia */}
       {status === 'suficiencia' && highlightRole !== 'selected' && (
-        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-800 dark:text-purple-300 font-semibold mt-0.5 pointer-events-none">
-          Suficiencia
+        <span
+          className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold mt-0.5 pointer-events-none ${
+            isPrereqsMet === false
+              ? 'bg-purple-500/15 text-purple-700/80 dark:text-purple-300/80 border border-purple-400/30 border-dashed'
+              : 'bg-purple-500/20 text-purple-800 dark:text-purple-300'
+          }`}
+        >
+          {isPrereqsMet === false ? 'Suficiencia (Bloq.)' : 'Suficiencia'}
         </span>
       )}
 

@@ -6,7 +6,7 @@ import {
   type NodeTypes
 } from '@xyflow/react';
 import type { StandardCourse, ElectiveBlock, CurriculumItem } from '@shared/types.js';
-import { CurriculumModel, isElectiveBlock, getCoursesUnlockedByCursando } from '@shared/index.js';
+import { CurriculumModel, isElectiveBlock, getCoursesUnlockedByCursando, arePrereqsMet } from '@shared/index.js';
 import { getAllAncestors, getDirectDependents } from '@shared/graph.js';
 import { buildNodesAndEdges, type LayoutMode } from '../layout.js';
 import { CourseNode } from './CourseNode.js';
@@ -28,7 +28,7 @@ interface CurriculumCanvasProps {
   layoutMode: LayoutMode;
   filterMode: FilterMode;
   isDark: boolean;
-  onUpdateCourseStatus: (itemId: string, status: 'disponible' | 'cursando' | 'completada' | 'suficiencia') => Promise<void>;
+  onUpdateCourseStatus: (itemId: string, status: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia') => Promise<void>;
   onError: (msg: string) => void;
 }
 
@@ -97,10 +97,11 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
       const status = state.statuses[id] || 'bloqueada';
       const item = node.data.item as CurriculumItem;
       const isUnlockedByCursando = unlockedByCursando.has(id);
+      const isPrereqsMet = arePrereqsMet(id, model, state.progress);
 
       let isFiltered = false;
       if (filterMode === 'disponibles') {
-        isFiltered = status !== 'disponible' && status !== 'suficiencia' && !isUnlockedByCursando;
+        isFiltered = status !== 'disponible' && !(status === 'suficiencia' && isPrereqsMet) && !isUnlockedByCursando;
       } else if (filterMode === 'suficiencia') {
         isFiltered = status !== 'suficiencia';
       } else if (filterMode === 'ocultar_completadas') {
@@ -127,6 +128,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
             item,
             status,
             completedCount,
+            isPrereqsMet,
             isDimmed,
             isFiltered,
             isUnlockedByCursando,
@@ -141,6 +143,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         data: {
           item,
           status,
+          isPrereqsMet,
           isDimmed,
           isFiltered,
           isUnlockedByCursando,
@@ -152,6 +155,8 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
   }, [
     rawNodes,
     state.statuses,
+    state.progress,
+    model,
     selectedId,
     ancestors,
     directDependents,

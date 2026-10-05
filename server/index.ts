@@ -68,10 +68,10 @@ api.get('/state', c => {
 api.put('/progress/:itemId', async c => {
   const username = c.get('username');
   const itemId = c.req.param('itemId');
-  const body = await c.req.json<{ status: 'disponible' | 'cursando' | 'completada' | 'suficiencia' }>();
+  const body = await c.req.json<{ status: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia' }>();
 
-  if (!body || !['disponible', 'cursando', 'completada', 'suficiencia'].includes(body.status)) {
-    return c.json({ error: 'Estado inválido. Opciones: disponible, cursando, completada, suficiencia' }, 400);
+  if (!body || !['disponible', 'bloqueada', 'cursando', 'completada', 'suficiencia'].includes(body.status)) {
+    return c.json({ error: 'Estado inválido. Opciones: disponible, bloqueada, cursando, completada, suficiencia' }, 400);
   }
 
   const currentProgress = getUserProgress(username);

@@ -227,12 +227,30 @@ describe('Graduation Simulator', () => {
     const overall = computeOverallProgress(model, progress);
     expect(overall.suficienciaUnits).toBe(1);
 
-    // Transitions from suficiencia
+    // Transitions from suficiencia when prereqs are met
     expect(canTransition('SOFT-01', 'disponible', model, progress).allowed).toBe(true);
     expect(canTransition('SOFT-01', 'cursando', model, progress).allowed).toBe(true);
     expect(canTransition('SOFT-01', 'completada', model, progress).allowed).toBe(true);
 
-    // Blocked course cannot be transitioned to suficiencia directly
-    expect(canTransition('SOFT-02', 'suficiencia', model, progress).allowed).toBe(false);
+    // Blocked course CAN be marked as suficiencia in advance
+    expect(canTransition('SOFT-02', 'suficiencia', model, progress).allowed).toBe(true);
+
+    // When a blocked course is marked as suficiencia:
+    const progressWithBlockedSuficiencia: Record<string, StoredStatus> = {
+      'SOFT-02': 'suficiencia'
+    };
+    const statuses2 = computeAllStatuses(model, progressWithBlockedSuficiencia);
+    expect(statuses2['SOFT-02']).toBe('suficiencia');
+
+    // But it cannot advance to cursando or completada until prereqs are met
+    const checkCursando = canTransition('SOFT-02', 'cursando', model, progressWithBlockedSuficiencia);
+    expect(checkCursando.allowed).toBe(false);
+    expect(checkCursando.reason).toContain('faltan requisitos previos');
+
+    const checkCompletada = canTransition('SOFT-02', 'completada', model, progressWithBlockedSuficiencia);
+    expect(checkCompletada.allowed).toBe(false);
+
+    // It CAN be reverted back to bloqueada
+    expect(canTransition('SOFT-02', 'bloqueada', model, progressWithBlockedSuficiencia).allowed).toBe(true);
   });
 });

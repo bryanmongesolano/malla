@@ -1,7 +1,8 @@
 import React from 'react';
-import { Check, Clock, Play, GraduationCap, X } from 'lucide-react';
+import { Check, Clock, Play, GraduationCap, Lock, X } from 'lucide-react';
 import type { StandardCourse, CourseStatus, StoredStatus } from '@shared/types.js';
 import { canTransition } from '@shared/transitions.js';
+import { arePrereqsMet } from '@shared/status.js';
 import { CurriculumModel } from '@shared/curriculum.js';
 
 interface StatusMenuProps {
@@ -11,7 +12,7 @@ interface StatusMenuProps {
   model: CurriculumModel;
   progress: Record<string, StoredStatus>;
   onClose: () => void;
-  onSelectStatus: (status: 'disponible' | 'cursando' | 'completada' | 'suficiencia') => void;
+  onSelectStatus: (status: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia') => void;
 }
 
 export const StatusMenu: React.FC<StatusMenuProps> = ({
@@ -23,8 +24,14 @@ export const StatusMenu: React.FC<StatusMenuProps> = ({
   onClose,
   onSelectStatus
 }) => {
+  const isPrereqsMet = arePrereqsMet(item.id, model, progress);
+
+  // Base natural status: disponible if prereqs met, bloqueada otherwise
+  const baseStatus = isPrereqsMet ? 'disponible' : 'bloqueada';
+  const checkBase = canTransition(item.id, baseStatus, model, progress);
+  const isBaseSelected = currentStatus === baseStatus;
+
   // Test transition availability for each option
-  const checkDisponible = canTransition(item.id, 'disponible', model, progress);
   const checkCursando = canTransition(item.id, 'cursando', model, progress);
   const checkSuficiencia = canTransition(item.id, 'suficiencia', model, progress);
   const checkCompletada = canTransition(item.id, 'completada', model, progress);
@@ -66,29 +73,49 @@ export const StatusMenu: React.FC<StatusMenuProps> = ({
         </div>
 
         <div className="space-y-2 mt-4">
-          {/* 1. Disponible */}
-          <button
-            disabled={!checkDisponible.allowed && currentStatus !== 'disponible'}
-            onClick={() => {
-              onSelectStatus('disponible');
-              onClose();
-            }}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
-              currentStatus === 'disponible'
-                ? 'bg-sky-500/20 border-sky-500 text-sky-800 dark:text-sky-200 ring-1 ring-sky-500'
-                : checkDisponible.allowed
-                ? 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-sky-500/50'
-                : 'bg-slate-100 dark:bg-slate-800/30 border-slate-200 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-sky-500 dark:text-sky-400" />
-              <span>Disponible</span>
-            </div>
-            {currentStatus === 'disponible' && <Check className="w-4 h-4 text-sky-500 dark:text-sky-400" />}
-          </button>
-          {!checkDisponible.allowed && currentStatus !== 'disponible' && (
-            <p className="text-[10px] text-amber-600 dark:text-amber-400/90 px-1 leading-tight">{checkDisponible.reason}</p>
+          {/* 1. Base status: Disponible o Bloqueada */}
+          {isPrereqsMet ? (
+            <button
+              disabled={!checkBase.allowed && !isBaseSelected}
+              onClick={() => {
+                onSelectStatus('disponible');
+                onClose();
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
+                isBaseSelected
+                  ? 'bg-sky-500/20 border-sky-500 text-sky-800 dark:text-sky-200 ring-1 ring-sky-500'
+                  : checkBase.allowed
+                  ? 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-sky-500/50'
+                  : 'bg-slate-100 dark:bg-slate-800/30 border-slate-200 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-sky-500 dark:text-sky-400" />
+                <span>Disponible</span>
+              </div>
+              {isBaseSelected && <Check className="w-4 h-4 text-sky-500 dark:text-sky-400" />}
+            </button>
+          ) : (
+            <button
+              disabled={!checkBase.allowed && !isBaseSelected}
+              onClick={() => {
+                onSelectStatus('bloqueada');
+                onClose();
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
+                isBaseSelected
+                  ? 'bg-slate-200/80 border-slate-400 text-slate-800 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 ring-1 ring-slate-400'
+                  : checkBase.allowed
+                  ? 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  : 'bg-slate-100 dark:bg-slate-800/30 border-slate-200 dark:border-slate-800/60 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <span>{currentStatus === 'suficiencia' ? 'Desmarcar suficiencia' : 'Bloqueada'}</span>
+              </div>
+              {isBaseSelected && <Check className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
+            </button>
           )}
 
           {/* 2. Cursando */}
@@ -133,7 +160,14 @@ export const StatusMenu: React.FC<StatusMenuProps> = ({
           >
             <div className="flex items-center gap-2">
               <GraduationCap className="w-4 h-4 text-purple-500 dark:text-purple-400" />
-              <span>Suficiencia</span>
+              <div className="flex flex-col items-start text-left">
+                <span>Suficiencia</span>
+                {!isPrereqsMet && (
+                  <span className="text-[9px] text-purple-600 dark:text-purple-400 font-normal">
+                    {currentStatus === 'suficiencia' ? '(Requisitos pendientes)' : 'Adelantada (atenuada)'}
+                  </span>
+                )}
+              </div>
             </div>
             {currentStatus === 'suficiencia' && <Check className="w-4 h-4 text-purple-500 dark:text-purple-400" />}
           </button>

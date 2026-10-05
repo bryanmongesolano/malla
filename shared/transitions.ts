@@ -3,12 +3,12 @@ import type {
   TransitionCheckResult
 } from './types.js';
 import { CurriculumModel } from './curriculum.js';
-import { computeAllStatuses } from './status.js';
+import { computeAllStatuses, arePrereqsMet } from './status.js';
 import { getAllDependents } from './graph.js';
 
 export function canTransition(
   itemId: string,
-  targetStatus: 'disponible' | 'cursando' | 'completada' | 'suficiencia',
+  targetStatus: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia',
   model: CurriculumModel,
   progress: Record<string, StoredStatus>
 ): TransitionCheckResult {
@@ -27,8 +27,12 @@ export function canTransition(
     return { allowed: true };
   }
 
-  // Locked item cannot be moved to cursando, completada or suficiencia
+  // Locked item CAN be marked as suficiencia! But cannot be enrolled (cursando) or completed.
   if (current === 'bloqueada') {
+    if (targetStatus === 'suficiencia' || targetStatus === 'bloqueada') {
+      return { allowed: true };
+    }
+
     const item = model.getItem(itemId);
     const option = model.getElectiveOption(itemId);
     const parentBlock = model.getElectiveParentBlock(itemId);
@@ -60,12 +64,29 @@ export function canTransition(
     };
   }
 
+  // If currently in suficiencia:
+  if (current === 'suficiencia') {
+    // Reverting suficiencia to default (disponible or bloqueada) is always allowed
+    if (targetStatus === 'disponible' || targetStatus === 'bloqueada') {
+      return { allowed: true };
+    }
+    // Advancing to cursando or completada requires prerequisites to be completed
+    if (targetStatus === 'cursando' || targetStatus === 'completada') {
+      if (!arePrereqsMet(itemId, model, progress)) {
+        return {
+          allowed: false,
+          reason: 'No puedes cursar o completar esta materia porque aún faltan requisitos previos.'
+        };
+      }
+      return { allowed: true };
+    }
+  }
+
   // Transitions between non-completed states or advancing to completada:
   // (disponible <-> suficiencia, disponible/suficiencia/cursando -> completada, cursando -> disponible/suficiencia)
   if (
-    (current === 'disponible' && ['cursando', 'completada', 'suficiencia'].includes(targetStatus)) ||
-    (current === 'suficiencia' && ['disponible', 'cursando', 'completada'].includes(targetStatus)) ||
-    (current === 'cursando' && ['disponible', 'suficiencia', 'completada'].includes(targetStatus))
+    (current === 'disponible' && ['cursando', 'completada', 'suficiencia', 'bloqueada'].includes(targetStatus)) ||
+    (current === 'cursando' && ['disponible', 'bloqueada', 'suficiencia', 'completada'].includes(targetStatus))
   ) {
     return { allowed: true };
   }

@@ -3,6 +3,7 @@ import { X, Check, Play, Clock, GraduationCap, Lock } from 'lucide-react';
 import type { ElectiveBlock, CourseStatus, StoredStatus } from '@shared/types.js';
 import { CurriculumModel } from '@shared/curriculum.js';
 import { canTransition } from '@shared/transitions.js';
+import { arePrereqsMet } from '@shared/status.js';
 
 interface ElectiveSheetProps {
   block: ElectiveBlock;
@@ -11,7 +12,7 @@ interface ElectiveSheetProps {
   model: CurriculumModel;
   progress: Record<string, StoredStatus>;
   onClose: () => void;
-  onUpdateStatus: (optionId: string, status: 'disponible' | 'cursando' | 'completada' | 'suficiencia') => void;
+  onUpdateStatus: (optionId: string, status: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia') => void;
 }
 
 export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
@@ -66,7 +67,11 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
         <div className="flex-1 overflow-y-auto py-3 space-y-3">
           {block.options.map(opt => {
             const status = optionStatuses[opt.id] || 'bloqueada';
-            const checkDisponible = canTransition(opt.id, 'disponible', model, progress);
+            const isPrereqsMet = arePrereqsMet(opt.id, model, progress);
+            const baseStatus = isPrereqsMet ? 'disponible' : 'bloqueada';
+            const checkBase = canTransition(opt.id, baseStatus, model, progress);
+            const isBaseSelected = status === baseStatus;
+
             const checkCursando = canTransition(opt.id, 'cursando', model, progress);
             const checkSuficiencia = canTransition(opt.id, 'suficiencia', model, progress);
             const checkCompletada = canTransition(opt.id, 'completada', model, progress);
@@ -87,13 +92,15 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                             : status === 'cursando'
                             ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40'
                             : status === 'suficiencia'
-                            ? 'bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-500/40'
+                            ? isPrereqsMet
+                              ? 'bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-500/40'
+                              : 'bg-purple-500/15 text-purple-700/80 dark:text-purple-300/80 border border-purple-400/40 border-dashed'
                             : status === 'disponible'
                             ? 'bg-sky-500/20 text-sky-800 dark:text-sky-300 border border-sky-500/40'
                             : 'bg-slate-200 text-slate-500 dark:bg-slate-800 dark:text-slate-500 border border-slate-300 dark:border-slate-700/50'
                         }`}
                       >
-                        {status}
+                        {status === 'suficiencia' ? (isPrereqsMet ? 'suficiencia' : 'suficiencia (bloq.)') : status}
                       </span>
                     </div>
                     <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-1 leading-snug">
@@ -109,20 +116,37 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
 
                 {/* State selector buttons */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
-                  <button
-                    disabled={!checkDisponible.allowed && status !== 'disponible'}
-                    onClick={() => onUpdateStatus(opt.id, 'disponible')}
-                    className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
-                      status === 'disponible'
-                        ? 'bg-sky-600 text-white font-bold shadow-sm'
-                        : checkDisponible.allowed
-                        ? 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
-                        : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
-                    }`}
-                  >
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Disponible</span>
-                  </button>
+                  {isPrereqsMet ? (
+                    <button
+                      disabled={!checkBase.allowed && !isBaseSelected}
+                      onClick={() => onUpdateStatus(opt.id, 'disponible')}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                        isBaseSelected
+                          ? 'bg-sky-600 text-white font-bold shadow-sm'
+                          : checkBase.allowed
+                          ? 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                          : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Disponible</span>
+                    </button>
+                  ) : (
+                    <button
+                      disabled={!checkBase.allowed && !isBaseSelected}
+                      onClick={() => onUpdateStatus(opt.id, 'bloqueada')}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                        isBaseSelected
+                          ? 'bg-slate-300 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold shadow-sm'
+                          : checkBase.allowed
+                          ? 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                          : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>{status === 'suficiencia' ? 'Desmarcar' : 'Bloqueada'}</span>
+                    </button>
+                  )}
 
                   <button
                     disabled={!checkCursando.allowed && status !== 'cursando'}
@@ -144,7 +168,9 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                     onClick={() => onUpdateStatus(opt.id, 'suficiencia')}
                     className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
                       status === 'suficiencia'
-                        ? 'bg-purple-600 text-white font-bold shadow-sm'
+                        ? isPrereqsMet
+                          ? 'bg-purple-600 text-white font-bold shadow-sm'
+                          : 'bg-purple-600/80 text-white font-bold shadow-sm border border-purple-400/50 border-dashed'
                         : checkSuficiencia.allowed
                         ? 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                         : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'

@@ -5,6 +5,38 @@ import type {
 } from './types.js';
 import { CurriculumModel, isElectiveBlock } from './curriculum.js';
 
+export function arePrereqsMet(
+  itemId: string,
+  model: CurriculumModel,
+  progress: Record<string, StoredStatus>
+): boolean {
+  const isPrereqCompleted = (prereqId: string): boolean => {
+    const item = model.getItem(prereqId);
+    if (item && isElectiveBlock(item)) {
+      const completedOpts = item.options.filter(
+        opt => progress[opt.id] === 'completada'
+      ).length;
+      return completedOpts >= item.required;
+    }
+    return progress[prereqId] === 'completada';
+  };
+
+  const item = model.getItem(itemId);
+  if (item) {
+    return item.prereqs.every(isPrereqCompleted);
+  }
+
+  const option = model.getElectiveOption(itemId);
+  const parentBlock = model.getElectiveParentBlock(itemId);
+  if (option && parentBlock) {
+    const blockPrereqsMet = parentBlock.prereqs.every(isPrereqCompleted);
+    const optionPrereqsMet = option.prereqs.every(isPrereqCompleted);
+    return blockPrereqsMet && optionPrereqsMet;
+  }
+
+  return false;
+}
+
 export function computeAllStatuses(
   model: CurriculumModel,
   progress: Record<string, StoredStatus>

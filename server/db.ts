@@ -67,10 +67,10 @@ export function getUserProgress(username: string): Record<string, StoredStatus> 
 export function setUserProgressItem(
   username: string,
   itemId: string,
-  status: 'disponible' | 'cursando' | 'completada' | 'suficiencia'
+  status: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia'
 ): void {
   const now = new Date().toISOString();
-  if (status === 'disponible') {
+  if (status === 'disponible' || status === 'bloqueada') {
     const stmt = db.prepare('DELETE FROM progress WHERE username = ? AND item_id = ?');
     stmt.run(username, itemId);
   } else {
