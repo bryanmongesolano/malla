@@ -65,10 +65,10 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex-1 flex flex-col justify-center gap-2 min-w-0">
           {/* Progress bar (thicker, rounded, smooth gradient, themed track for simulation) */}
           <div
-            className={`w-full h-2.5 sm:h-3 rounded-full overflow-hidden shadow-inner transition-colors duration-200 ${
+            className={`w-full h-2.5 sm:h-3 rounded-full overflow-hidden shadow-inner border transition-colors duration-200 ${
               isSimulationMode
-                ? 'bg-amber-950/15 dark:bg-black/60 border border-amber-500/30 dark:border-amber-500/30'
-                : 'bg-slate-200 dark:bg-slate-800'
+                ? 'bg-amber-950/15 dark:bg-black/60 border-amber-500/30'
+                : 'bg-slate-200 dark:bg-slate-800 border-transparent'
             }`}
           >
             <div
