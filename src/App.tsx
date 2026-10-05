@@ -3,6 +3,7 @@ import { fetchState, updateProgress, updateSettings, type FullClientState } from
 import { Header, type FilterMode } from './components/Header.js';
 import { CurriculumCanvas } from './components/CurriculumCanvas.js';
 import { SettingsDialog } from './components/SettingsDialog.js';
+import { AlertBanner } from './components/AlertBanner.js';
 import type { LayoutMode } from './layout.js';
 import type { StoredStatus, UserSettings } from '@shared/types.js';
 import {
@@ -29,8 +30,8 @@ export function App() {
   const [simulatedProgress, setSimulatedProgress] = useState<Record<string, StoredStatus> | null>(null);
   const [simulatedSettings, setSimulatedSettings] = useState<UserSettings | null>(null);
 
-  // Toast notifications
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  // Alert banner notification (under topbar)
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   // Dark mode
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -248,6 +249,11 @@ export function App() {
         onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
+      <AlertBanner
+        message={alertMsg}
+        onDismiss={() => setAlertMsg(null)}
+      />
+
       <main className="flex-1 w-full relative min-h-0 overflow-hidden">
         <CurriculumCanvas
           state={activeState}
@@ -260,23 +266,9 @@ export function App() {
           onSetFilterMode={setFilterMode}
           onSetLayoutMode={setLayoutMode}
           onUpdateCourseStatus={handleUpdateCourseStatus}
-          onError={msg => setToastMsg(msg)}
+          onShowAlert={msg => setAlertMsg(msg)}
         />
       </main>
-
-      {/* Floating toast notification */}
-      {toastMsg && (
-        <div className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] bg-slate-900/95 border border-slate-700/80 text-slate-100 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md flex items-start gap-2.5 animate-in fade-in slide-in-from-bottom duration-300">
-          <AlertCircle className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 text-xs leading-snug">{toastMsg}</div>
-          <button
-            onClick={() => setToastMsg(null)}
-            className="text-slate-400 hover:text-white p-0.5"
-          >
-            &times;
-          </button>
-        </div>
-      )}
 
       {/* Settings Modal */}
       {isSettingsOpen && (

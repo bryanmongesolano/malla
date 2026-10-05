@@ -7,12 +7,11 @@ import {
   type NodeTypes
 } from '@xyflow/react';
 import type { StandardCourse, ElectiveBlock, CurriculumItem } from '@shared/types.js';
-import { CurriculumModel, isElectiveBlock, getCoursesUnlockedByCursando, arePrereqsMet } from '@shared/index.js';
+import { CurriculumModel, isElectiveBlock, getCoursesUnlockedByCursando, arePrereqsMet, canTransition } from '@shared/index.js';
 import { getAllAncestors, getDirectDependents } from '@shared/graph.js';
 import { buildNodesAndEdges, type LayoutMode } from '../layout.js';
 import { CourseNode } from './CourseNode.js';
 import { ElectiveBlockNode } from './ElectiveBlockNode.js';
-import { StatusMenu } from './StatusMenu.js';
 import { ElectiveSheet } from './ElectiveSheet.js';
 import { CanvasControls } from './Controls.js';
 import { CanvasGestures } from './CanvasGestures.js';
@@ -68,7 +67,7 @@ interface CurriculumCanvasProps {
   onSetFilterMode: (m: FilterMode) => void;
   onSetLayoutMode: (m: LayoutMode) => void;
   onUpdateCourseStatus: (itemId: string, status: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia') => Promise<void>;
-  onError: (msg: string) => void;
+  onShowAlert: (msg: string) => void;
 }
 
 export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
@@ -82,15 +81,12 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
   onSetFilterMode,
   onSetLayoutMode,
   onUpdateCourseStatus,
-  onError
+  onShowAlert
 }) => {
   const model = useMemo(() => new CurriculumModel(state.curriculum), [state.curriculum]);
 
   // Currently selected node for highlighting route
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  // StatusMenu modal state (for standard courses)
-  const [menuCourse, setMenuCourse] = useState<{ item: StandardCourse; anchor: DOMRect | null } | null>(null);
 
   // ElectiveSheet modal state (for elective blocks)
   const [sheetBlock, setSheetBlock] = useState<ElectiveBlock | null>(null);
@@ -164,16 +160,43 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     };
   }, []);
 
-  const handleOpenSelection = useCallback(() => {
-    if (!selectedId) return;
-    const item = model.getItem(selectedId);
-    if (!item) return;
-    if (isElectiveBlock(item)) {
-      setSheetBlock(item);
-    } else {
-      setMenuCourse({ item, anchor: null });
-    }
+  // Selected item and transition checks for the vertical action stack
+  const selectedItem = useMemo(() => {
+    return selectedId ? model.getItem(selectedId) : null;
   }, [selectedId, model]);
+
+  const isPrereqsMet = useMemo(() => {
+    if (!selectedItem || isElectiveBlock(selectedItem)) return false;
+    return arePrereqsMet(selectedItem.id, model, state.progress);
+  }, [selectedItem, model, state.progress]);
+
+  const baseStatus = isPrereqsMet ? 'disponible' : 'bloqueada';
+  const selectedStatus = selectedId ? (state.statuses[selectedId] || 'bloqueada') : undefined;
+
+  const transitions = useMemo(() => {
+    if (!selectedItem || isElectiveBlock(selectedItem)) return null;
+    return {
+      base: canTransition(selectedItem.id, baseStatus, model, state.progress),
+      suficiencia: canTransition(selectedItem.id, 'suficiencia', model, state.progress),
+      cursando: canTransition(selectedItem.id, 'cursando', model, state.progress),
+      completada: canTransition(selectedItem.id, 'completada', model, state.progress)
+    };
+  }, [selectedItem, baseStatus, model, state.progress]);
+
+  const handleActionStatus = useCallback(async (newStatus: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia') => {
+    if (!selectedId) return;
+    try {
+      await onUpdateCourseStatus(selectedId, newStatus);
+    } catch (err: any) {
+      onShowAlert(err.message || 'Error al actualizar');
+    }
+  }, [selectedId, onUpdateCourseStatus, onShowAlert]);
+
+  const handleOpenElectiveSheet = useCallback(() => {
+    if (selectedItem && isElectiveBlock(selectedItem)) {
+      setSheetBlock(selectedItem);
+    }
+  }, [selectedItem]);
 
   // Decorate nodes with current statuses, highlights, gestures
   const displayNodes = useMemo(() => {
@@ -417,8 +440,13 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
       >
         <AdaptiveBackground isDark={isDark} />
         <CanvasControls
-          hasSelection={!!selectedId}
-          onEdit={handleOpenSelection}
+          selectedItem={selectedItem}
+          selectedStatus={selectedStatus}
+          isPrereqsMet={isPrereqsMet}
+          transitions={transitions}
+          onActionStatus={handleActionStatus}
+          onOpenElectiveSheet={handleOpenElectiveSheet}
+          onShowAlert={onShowAlert}
           isSimulationMode={isSimulationMode}
           onStartSimulation={onStartSimulation}
           onExitSimulation={onExitSimulation}
@@ -429,25 +457,6 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         />
         <CanvasGestures />
       </ReactFlow>
-
-      {/* Course status popover menu */}
-      {menuCourse && (
-        <StatusMenu
-          item={menuCourse.item}
-          currentStatus={state.statuses[menuCourse.item.id] || 'bloqueada'}
-          anchorRect={menuCourse.anchor}
-          model={model}
-          progress={state.progress}
-          onClose={() => setMenuCourse(null)}
-          onSelectStatus={async status => {
-            try {
-              await onUpdateCourseStatus(menuCourse.item.id, status);
-            } catch (err: any) {
-              onError(err.message || 'Error al actualizar');
-            }
-          }}
-        />
-      )}
 
       {/* Elective block options modal sheet */}
       {sheetBlock && (
@@ -462,7 +471,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
             try {
               await onUpdateCourseStatus(optId, status);
             } catch (err: any) {
-              onError(err.message || 'Error al actualizar optativa');
+              onShowAlert(err.message || 'Error al actualizar optativa');
             }
           }}
         />

@@ -3,7 +3,7 @@ import { useReactFlow, useViewport, useNodesInitialized, getViewportForBounds } 
 import {
   Crosshair,
   ZoomIn,
-  Pencil,
+  Play,
   FlaskConical,
   Undo2,
   Filter,
@@ -13,14 +13,34 @@ import {
   GraduationCap,
   EyeOff,
   GitFork,
-  Columns
+  Columns,
+  Lock
 } from 'lucide-react';
 import type { FilterMode } from './Header.js';
 import type { LayoutMode } from '../layout.js';
+import type { CurriculumItem, CourseStatus } from '@shared/types.js';
+import { isElectiveBlock } from '@shared/index.js';
+
+export interface CourseActionTransition {
+  allowed: boolean;
+  reason?: string;
+}
+
+export interface CourseTransitions {
+  base: CourseActionTransition;
+  suficiencia: CourseActionTransition;
+  cursando: CourseActionTransition;
+  completada: CourseActionTransition;
+}
 
 export interface CanvasControlsProps {
-  hasSelection?: boolean;
-  onEdit?: () => void;
+  selectedItem: CurriculumItem | null;
+  selectedStatus?: CourseStatus;
+  isPrereqsMet?: boolean;
+  transitions?: CourseTransitions | null;
+  onActionStatus?: (target: 'disponible' | 'bloqueada' | 'cursando' | 'completada' | 'suficiencia') => void;
+  onOpenElectiveSheet?: () => void;
+  onShowAlert?: (msg: string) => void;
   isSimulationMode: boolean;
   onStartSimulation: () => void;
   onExitSimulation: () => void;
@@ -31,8 +51,13 @@ export interface CanvasControlsProps {
 }
 
 export const CanvasControls: React.FC<CanvasControlsProps> = ({
-  hasSelection,
-  onEdit,
+  selectedItem,
+  selectedStatus,
+  isPrereqsMet,
+  transitions,
+  onActionStatus,
+  onOpenElectiveSheet,
+  onShowAlert,
   isSimulationMode,
   onStartSimulation,
   onExitSimulation,
@@ -149,33 +174,34 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
     {
       id: 'disponibles',
       label: 'Solo disponibles',
-      icon: <Clock className="w-4 h-4 text-sky-500" />
+      icon: <Clock className="w-4 h-4 text-sky-500 dark:text-sky-400" />
     },
     {
       id: 'suficiencia',
-      label: 'Suficiencia',
-      icon: <GraduationCap className="w-4 h-4 text-purple-500" />
+      label: 'Por suficiencia',
+      icon: <GraduationCap className="w-4 h-4 text-purple-500 dark:text-purple-400" />
     },
     {
       id: 'ocultar_completadas',
-      label: 'Ocultar completadas',
-      icon: <EyeOff className="w-4 h-4 text-emerald-500" />
+      label: 'Ocultar aprobadas',
+      icon: <EyeOff className="w-4 h-4 text-slate-500 dark:text-slate-400" />
     }
   ];
 
+  const baseStatus = isPrereqsMet ? 'disponible' : 'bloqueada';
+
   return (
     <>
-      {/* Left Cluster: Simular, Filtro, Vista */}
-      <div className="absolute bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] left-3 sm:left-5 z-30 flex items-center gap-2 nodrag nopan">
-        {/* 1. Simulation Toggle Button */}
+      {/* Left Cluster: Simular, Filtrar, Vista */}
+      <div className="absolute bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] left-3 sm:left-5 z-30 flex items-center gap-2.5 nodrag nopan">
+        {/* 1. Simulate Button */}
         {!isSimulationMode ? (
           <button
             onClick={onStartSimulation}
-            className="h-12 min-h-[48px] px-3.5 rounded-2xl border border-purple-300/80 dark:border-purple-800/80 bg-purple-50/90 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 shadow-xl backdrop-blur-md flex items-center gap-2 transition-all cursor-pointer active:scale-95"
-            title="Iniciar modo de simulación"
+            className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
+            title="Simular avance (Sandbox)"
           >
-            <FlaskConical className="w-5 h-5 text-purple-600 dark:text-purple-400 shrink-0" />
-            <span className="text-xs sm:text-sm font-semibold">Simular</span>
+            <FlaskConical className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           </button>
         ) : (
           <button
@@ -247,27 +273,150 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
         </button>
       </div>
 
-      {/* Right Cluster: Edit (above) and Zoom (below) */}
+      {/* Right Cluster: Selection Actions (above) and Zoom (below) */}
       <div className="absolute bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-3 sm:right-5 z-30 flex flex-col items-center gap-2 nodrag nopan">
-        {/* 4. Edit Button (appears smoothly directly above zoom when a course is selected) */}
-        {hasSelection && (
+        {/* If an elective block is selected: single button to open sheet */}
+        {selectedItem && isElectiveBlock(selectedItem) && (
           <button
-            onClick={onEdit}
-            className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center bg-cyan-500/20 dark:bg-cyan-500/20 border border-cyan-500/60 text-cyan-700 dark:text-cyan-300 rounded-2xl shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ring-1 ring-cyan-500/30 animate-in fade-in zoom-in-95 duration-200"
-            title="Editar estado"
+            onClick={onOpenElectiveSheet}
+            className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/60 rounded-2xl shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ring-1 ring-purple-500/30 animate-in fade-in zoom-in-95 duration-200"
+            title="Elegir materia optativa"
           >
-            <Pencil className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </button>
         )}
 
-        {/* 5. Zoom / Fit View Toggle Button */}
+        {/* If a standard course is selected: 4 vertical buttons in requested order */}
+        {selectedItem && !isElectiveBlock(selectedItem) && (
+          <div className="flex flex-col items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
+            {/* 1. Estado Base (Clock celeste si prereqs cumplidos, Lock gris si bloqueada) */}
+            <button
+              onClick={() => {
+                if (selectedStatus === baseStatus) return;
+                if (!transitions?.base.allowed) {
+                  onShowAlert?.(transitions?.base.reason || 'No se puede cambiar a este estado.');
+                  return;
+                }
+                onActionStatus?.(baseStatus);
+              }}
+              className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
+                selectedStatus === baseStatus
+                  ? isPrereqsMet
+                    ? 'bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-500/70 ring-1 ring-sky-500/40'
+                    : 'bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-400 dark:border-slate-600 ring-1 ring-slate-400'
+                  : transitions?.base.allowed
+                  ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
+                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
+              }`}
+              title={isPrereqsMet ? 'Disponible' : 'Bloqueada'}
+            >
+              {isPrereqsMet ? (
+                <Clock className="w-5 h-5 text-sky-500 dark:text-sky-400" />
+              ) : (
+                <Lock className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+              )}
+            </button>
+
+            {/* 2. Suficiencia (GraduationCap morado) */}
+            <button
+              onClick={() => {
+                if (selectedStatus === 'suficiencia') {
+                  // Toggle off -> revert to base
+                  if (!transitions?.base.allowed) {
+                    onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar suficiencia.');
+                    return;
+                  }
+                  onActionStatus?.(baseStatus);
+                  return;
+                }
+                if (!transitions?.suficiencia.allowed) {
+                  onShowAlert?.(transitions?.suficiencia.reason || 'No se puede marcar suficiencia.');
+                  return;
+                }
+                onActionStatus?.('suficiencia');
+              }}
+              className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
+                selectedStatus === 'suficiencia'
+                  ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/70 ring-1 ring-purple-500/40'
+                  : transitions?.suficiencia.allowed
+                  ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
+                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
+              }`}
+              title="Suficiencia"
+            >
+              <GraduationCap className="w-5 h-5 text-purple-500 dark:text-purple-400" />
+            </button>
+
+            {/* 3. Cursando (Play ámbar) */}
+            <button
+              onClick={() => {
+                if (selectedStatus === 'cursando') {
+                  // Toggle off -> revert to base
+                  if (!transitions?.base.allowed) {
+                    onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar cursando.');
+                    return;
+                  }
+                  onActionStatus?.(baseStatus);
+                  return;
+                }
+                if (!transitions?.cursando.allowed) {
+                  onShowAlert?.(transitions?.cursando.reason || 'No se puede marcar cursando.');
+                  return;
+                }
+                onActionStatus?.('cursando');
+              }}
+              className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
+                selectedStatus === 'cursando'
+                  ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/70 ring-1 ring-amber-500/40'
+                  : transitions?.cursando.allowed
+                  ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
+                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
+              }`}
+              title="Cursando"
+            >
+              <Play className="w-5 h-5 text-amber-500 dark:text-amber-400 fill-amber-500/20" />
+            </button>
+
+            {/* 4. Completada (Check verde) */}
+            <button
+              onClick={() => {
+                if (selectedStatus === 'completada') {
+                  // Toggle off -> revert to base
+                  if (!transitions?.base.allowed) {
+                    onShowAlert?.(transitions?.base.reason || 'No se puede desmarcar completada.');
+                    return;
+                  }
+                  onActionStatus?.(baseStatus);
+                  return;
+                }
+                if (!transitions?.completada.allowed) {
+                  onShowAlert?.(transitions?.completada.reason || 'No se puede marcar completada.');
+                  return;
+                }
+                onActionStatus?.('completada');
+              }}
+              className={`w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95 ${
+                selectedStatus === 'completada'
+                  ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/70 ring-1 ring-emerald-500/40'
+                  : transitions?.completada.allowed
+                  ? 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80'
+                  : 'bg-white/95 dark:bg-slate-900/90 border-slate-300/80 dark:border-slate-700/80 opacity-40'
+              }`}
+              title="Completada"
+            >
+              <Check className="w-5 h-5 text-emerald-500 dark:text-emerald-400 stroke-[2.5]" />
+            </button>
+          </div>
+        )}
+
+        {/* 5. Zoom / Reset View Toggle Button (Reactive) */}
         <button
           onClick={handleToggleView}
-          className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center bg-white/95 dark:bg-slate-900/90 border border-slate-300/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 rounded-2xl shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
-          title={isZoomedIn ? 'Mostrar toda la malla' : 'Acercar al centro'}
+          className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
+          title={isZoomedIn ? "Mostrar toda la malla" : "Acercar vista"}
         >
           {isZoomedIn ? (
-            <Crosshair className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+            <Crosshair className="w-5 h-5 text-sky-500 dark:text-sky-400" />
           ) : (
             <ZoomIn className="w-5 h-5 text-slate-600 dark:text-slate-300" />
           )}
