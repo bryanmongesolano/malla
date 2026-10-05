@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Production builds
+dist/
+dist-server/
+
+# Local databases and temporary data
+.local/
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Logs and system files
+*.log
+.DS_Store

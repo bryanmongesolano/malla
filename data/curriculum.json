@@ -1,0 +1,407 @@
+{
+  "program": "Bachillerato en Ingeniería del Software",
+  "institution": "Universidad CENFOTEC",
+  "totalCourses": 43,
+  "totalCredits": 141,
+  "periods": 9,
+  "periodType": "cuatrimestre",
+  "creditsPerPeriodRange": [12, 18],
+  "courses": [
+    {
+      "id": "SOFT-09",
+      "name": "Introducción a la Ingeniería del Software",
+      "credits": 3,
+      "period": 1,
+      "area": "Análisis y Especificación de Requerimientos",
+      "prereqs": []
+    },
+    {
+      "id": "FUN-02",
+      "name": "Lógica y Matemática Básica",
+      "credits": 3,
+      "period": 1,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": []
+    },
+    {
+      "id": "SOFT-01",
+      "name": "Principios de Programación 1",
+      "credits": 5,
+      "period": 1,
+      "area": "Fundamentos de Informática",
+      "prereqs": []
+    },
+    {
+      "id": "FUN-01",
+      "name": "Introducción a las Tecnologías de Información",
+      "credits": 3,
+      "period": 1,
+      "area": "Fundamentos de Informática",
+      "prereqs": []
+    },
+    {
+      "id": "FUN-08",
+      "name": "Expresión Oral y Escrita",
+      "credits": 3,
+      "period": 1,
+      "area": "Desarrollo Profesional",
+      "prereqs": []
+    },
+
+    {
+      "id": "FUN-05",
+      "name": "Cálculo Diferencial e Integral",
+      "credits": 3,
+      "period": 2,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": ["FUN-02"]
+    },
+    {
+      "id": "FUN-03",
+      "name": "Matemática Discreta 1",
+      "credits": 3,
+      "period": 2,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": ["FUN-02"]
+    },
+    {
+      "id": "SOFT-02",
+      "name": "Principios de Programación 2",
+      "credits": 5,
+      "period": 2,
+      "area": "Fundamentos de Informática",
+      "prereqs": ["SOFT-01"]
+    },
+    {
+      "id": "SOFT-06C2",
+      "name": "Diseño y Programación Web",
+      "credits": 4,
+      "period": 2,
+      "area": "Diseño y Modelado de Software",
+      "prereqs": []
+    },
+    {
+      "id": "FUN-09",
+      "name": "Desarrollo de Habilidades Blandas",
+      "credits": 3,
+      "period": 2,
+      "area": "Desarrollo Profesional",
+      "prereqs": ["FUN-08"]
+    },
+
+    {
+      "id": "FUN-18",
+      "name": "Física 1",
+      "credits": 3,
+      "period": 3,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": ["FUN-05"]
+    },
+    {
+      "id": "FUN-17",
+      "name": "Matemática Discreta 2",
+      "credits": 3,
+      "period": 3,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": ["FUN-03"]
+    },
+    {
+      "id": "SOFT-11C1",
+      "name": "Proyecto Integrador 1",
+      "credits": 5,
+      "period": 3,
+      "area": "Análisis y Especificación de Requerimientos",
+      "prereqs": ["SOFT-06C2", "SOFT-09"]
+    },
+    {
+      "id": "SOFT-10",
+      "name": "Estructuras de Datos",
+      "credits": 3,
+      "period": 3,
+      "area": "Fundamentos de Informática",
+      "prereqs": ["SOFT-02"]
+    },
+    {
+      "id": "FUN-14",
+      "name": "Inglés Conversacional 1",
+      "credits": 2,
+      "period": 3,
+      "area": "Desarrollo Profesional",
+      "prereqs": []
+    },
+
+    {
+      "id": "FUN-19",
+      "name": "Física 2",
+      "credits": 3,
+      "period": 4,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": ["FUN-18"]
+    },
+    {
+      "id": "FUN-06",
+      "name": "Álgebra Lineal",
+      "credits": 3,
+      "period": 4,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": ["FUN-03"]
+    },
+    {
+      "id": "SOFT-04",
+      "name": "Programación Orientada a Objetos",
+      "credits": 5,
+      "period": 4,
+      "area": "Diseño y Modelado de Software",
+      "prereqs": ["SOFT-02"]
+    },
+    {
+      "id": "SOFT-03",
+      "name": "Fundamentos de Bases de Datos",
+      "credits": 4,
+      "period": 4,
+      "area": "Fundamentos de Informática",
+      "prereqs": ["FUN-01", "SOFT-01"]
+    },
+    {
+      "id": "FUN-10",
+      "name": "Pensamiento Crítico",
+      "credits": 3,
+      "period": 4,
+      "area": "Desarrollo Profesional",
+      "prereqs": ["FUN-09"]
+    },
+
+    {
+      "id": "SOFT-13C1",
+      "name": "Arquitectura de Software 1",
+      "credits": 3,
+      "period": 5,
+      "area": "Diseño y Modelado de Software",
+      "prereqs": ["SOFT-03", "SOFT-04"]
+    },
+    {
+      "id": "FUN-04",
+      "name": "Probabilidad y Estadística 1",
+      "credits": 3,
+      "period": 5,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": []
+    },
+    {
+      "id": "SOFT-12C1",
+      "name": "Programación Web Avanzada",
+      "credits": 4,
+      "period": 5,
+      "area": "Diseño y Modelado de Software",
+      "prereqs": ["SOFT-04", "SOFT-06C2"]
+    },
+    {
+      "id": "SOFT-14",
+      "name": "Procesos de Ingeniería del Software",
+      "credits": 3,
+      "period": 5,
+      "area": "Procesos de Software",
+      "prereqs": ["SOFT-09"]
+    },
+    {
+      "id": "FUN-15",
+      "name": "Inglés Conversacional 2",
+      "credits": 2,
+      "period": 5,
+      "area": "Desarrollo Profesional",
+      "prereqs": ["FUN-14"]
+    },
+
+    {
+      "id": "FUN-20",
+      "name": "Física 3",
+      "credits": 3,
+      "period": 6,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": ["FUN-19"]
+    },
+    {
+      "id": "FUN-07",
+      "name": "Probabilidad y Estadística 2",
+      "credits": 3,
+      "period": 6,
+      "area": "Matemáticas y Ciencias Básicas",
+      "prereqs": ["FUN-04"]
+    },
+    {
+      "id": "SOFT-18C1",
+      "name": "Proyecto Integrador 2",
+      "credits": 5,
+      "period": 6,
+      "area": "Gestión de Proyectos de Software",
+      "prereqs": ["SOFT-12C1", "SOFT-13C1"]
+    },
+    {
+      "id": "SOFT-17",
+      "name": "Calidad, Verificación y Validación del Software",
+      "credits": 3,
+      "period": 6,
+      "area": "Calidad, Verificación y Validación del Software",
+      "prereqs": ["SOFT-14"]
+    },
+    {
+      "id": "FUN-11",
+      "name": "Liderazgo y Trabajo Colaborativo",
+      "credits": 3,
+      "period": 6,
+      "area": "Desarrollo Profesional",
+      "prereqs": ["FUN-10"]
+    },
+
+    {
+      "id": "SINT-04",
+      "name": "Principios de Inteligencia Artificial",
+      "credits": 3,
+      "period": 7,
+      "area": "Diseño y Modelado de Software",
+      "prereqs": ["FUN-07"]
+    },
+    {
+      "id": "SOFT-15",
+      "name": "Diseño de Interacción Humano - Computador",
+      "credits": 3,
+      "period": 7,
+      "area": "Calidad, Verificación y Validación del Software",
+      "prereqs": ["SOFT-12C1"]
+    },
+    {
+      "id": "SOFT-16",
+      "name": "Arquitectura de Software 2",
+      "credits": 3,
+      "period": 7,
+      "area": "Diseño y Modelado de Software",
+      "prereqs": ["SOFT-13C1"]
+    },
+    {
+      "id": "TI-03",
+      "name": "Arquitectura de Computadoras",
+      "credits": 3,
+      "period": 7,
+      "area": "Fundamentos de Informática",
+      "prereqs": ["FUN-01"]
+    },
+    {
+      "id": "FUN-16",
+      "name": "Inglés Conversacional 3",
+      "credits": 2,
+      "period": 7,
+      "area": "Desarrollo Profesional",
+      "prereqs": ["FUN-15"]
+    },
+
+    {
+      "id": "ELECTIVA-1",
+      "type": "electiveBlock",
+      "name": "Electiva 1",
+      "credits": 3,
+      "period": 8,
+      "required": 1,
+      "area": "Cursos Electivos",
+      "prereqs": [],
+      "options": [
+        {
+          "id": "SOFT-24",
+          "name": "Automatización de Pruebas",
+          "credits": 3,
+          "prereqs": ["SOFT-17"]
+        },
+        {
+          "id": "SINT-06",
+          "name": "Fundamentos de Aprendizaje Automático",
+          "credits": 3,
+          "prereqs": ["FUN-07"]
+        },
+        {
+          "id": "SOFT-25",
+          "name": "Arquitectura de Software Distribuido",
+          "credits": 3,
+          "prereqs": ["SOFT-13C1"]
+        }
+      ]
+    },
+    {
+      "id": "SOFT-22",
+      "name": "Programación Móvil",
+      "credits": 3,
+      "period": 8,
+      "area": "Seguridad del Software",
+      "prereqs": ["SOFT-15"]
+    },
+    {
+      "id": "TI-01",
+      "name": "Fundamentos de Redes",
+      "credits": 3,
+      "period": 8,
+      "area": "Fundamentos de Informática",
+      "prereqs": ["FUN-01"]
+    },
+    {
+      "id": "FUN-12",
+      "name": "Ética y Sostenibilidad en Tecnología",
+      "credits": 3,
+      "period": 8,
+      "area": "Desarrollo Profesional",
+      "prereqs": ["FUN-11"]
+    },
+
+    {
+      "id": "ELECTIVA-2",
+      "type": "electiveBlock",
+      "name": "Electiva 2",
+      "credits": 3,
+      "period": 9,
+      "required": 1,
+      "area": "Cursos Electivos",
+      "prereqs": [],
+      "options": [
+        {
+          "id": "SOFT-26",
+          "name": "Estándares y Métricas de Calidad del Software",
+          "credits": 3,
+          "prereqs": ["SOFT-17"]
+        },
+        {
+          "id": "SINT-05",
+          "name": "Modelado y Arquitectura en Inteligencia Artificial",
+          "credits": 3,
+          "prereqs": ["SINT-04"]
+        },
+        {
+          "id": "SOFT-27",
+          "name": "Desarrollo de Software en Cadena de Bloques",
+          "credits": 3,
+          "prereqs": ["SOFT-04"]
+        }
+      ]
+    },
+    {
+      "id": "SOFT-23",
+      "name": "Proyecto Integrador 3",
+      "credits": 5,
+      "period": 9,
+      "area": "Gestión de Proyectos de Software",
+      "prereqs": ["SOFT-17", "SOFT-22"]
+    },
+    {
+      "id": "CIB-06",
+      "name": "Desarrollo Seguro del Software",
+      "credits": 3,
+      "period": 9,
+      "area": "Seguridad del Software",
+      "prereqs": ["SOFT-16", "TI-01"]
+    },
+    {
+      "id": "FUN-13",
+      "name": "Investigación y Emprendimiento",
+      "credits": 3,
+      "period": 9,
+      "area": "Desarrollo Profesional",
+      "prereqs": ["FUN-12"]
+    }
+  ]
+}

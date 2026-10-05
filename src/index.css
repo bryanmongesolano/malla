@@ -1,0 +1,19 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import "@xyflow/react/dist/style.css";
+
+/* React Flow custom dark background and attribution styling */
+.react-flow__attribution {
+  display: none !important;
+}
+
+/* Custom transitions and pulse effects */
+@keyframes pulse-subtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
