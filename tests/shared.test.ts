@@ -173,7 +173,7 @@ describe('Graduation Simulator', () => {
 
     expect(result.periodsRemaining).toBeGreaterThanOrEqual(10);
     expect(result.periods.length).toBe(result.periodsRemaining);
-    expect(result.estimatedGraduationDate).toMatch(/(Abr|Ago|Dic) \d{4}/);
+    expect(result.estimatedGraduationDate).toMatch(/(abr|ago|dic) \d{4}/);
     expect(result.criticalPath.length).toBeGreaterThan(0);
   });
 

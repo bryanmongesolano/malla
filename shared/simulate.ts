@@ -17,7 +17,7 @@ function getPeriodLabel(p: PeriodInfo): string {
 }
 
 function getPeriodEndLabel(p: PeriodInfo): string {
-  const endMonths = ['Abr', 'Ago', 'Dic'];
+  const endMonths = ['abr', 'ago', 'dic'];
   return `${endMonths[p.periodIndex]} ${p.year}`;
 }
 

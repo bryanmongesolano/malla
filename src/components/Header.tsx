@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {overall.percentCompleted}%
               </span>
               <span className="text-slate-600 dark:text-slate-400">
-                {simulation.estimatedGraduationDate}
+                {simulation.estimatedGraduationDate?.toLowerCase()}
               </span>
             </div>
           </div>
