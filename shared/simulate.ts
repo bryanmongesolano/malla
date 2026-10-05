@@ -311,7 +311,7 @@ export function getRemainingTimeText(
   const monthPart = months === 1 ? '1 mes' : `${months} meses`;
 
   if (years > 0 && months > 0) {
-    return `${monthPart} y ${yearPart}`;
+    return `${yearPart} y ${monthPart}`;
   }
   if (years > 0) {
     return yearPart;

@@ -260,12 +260,12 @@ describe('Graduation Simulator', () => {
     // Current date: 5 Oct 2026 (Month index 9)
     const refDate = new Date(2026, 9, 5);
 
-    // 1 mes y 2 años: from Nov 2026 to Dec 2028 is 25 months (2 yrs 1 mo)
+    // 2 años y 1 mes: from Nov 2026 to Dec 2028 is 25 months (2 yrs 1 mo)
     const refNov2026 = new Date(2026, 10, 15);
-    expect(getRemainingTimeText('dic 2028', refNov2026)).toBe('1 mes y 2 años');
+    expect(getRemainingTimeText('dic 2028', refNov2026)).toBe('2 años y 1 mes');
 
-    // 2 meses y 1 año: from Oct 2026 to Dec 2027 is 14 months (1 yr 2 mo)
-    expect(getRemainingTimeText('dic 2027', refDate)).toBe('2 meses y 1 año');
+    // 1 año y 2 meses: from Oct 2026 to Dec 2027 is 14 months (1 yr 2 mo)
+    expect(getRemainingTimeText('dic 2027', refDate)).toBe('1 año y 2 meses');
 
     // 3 años: from Oct 2026 to Oct 2029 is 36 months (3 yrs 0 mo)
     const refDec2026 = new Date(2026, 11, 1);
@@ -288,7 +288,7 @@ describe('Graduation Simulator', () => {
     const sim = simulateGraduation(model, {}, 4, refDate);
     expect(sim.remainingTime).toBeDefined();
     expect(sim.remainingTime).not.toBe('completado');
-    expect(sim.remainingTime).toMatch(/(\d+ mes(es)?( y \d+ año(s)?)?|\d+ año(s)?)/);
+    expect(sim.remainingTime).toMatch(/(\d+ año(s)?( y \d+ mes(es)?)?|\d+ mes(es)?)/);
 
     // Full completion returns completado
     const allProgress: Record<string, StoredStatus> = {};
