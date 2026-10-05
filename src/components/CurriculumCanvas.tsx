@@ -25,33 +25,27 @@ const nodeTypes: NodeTypes = {
 };
 
 /**
- * AdaptiveBackground dynamically scales SVG pattern dot radius and grid gap
- * based on the active viewport zoom level (Figma / Miro style LOD), keeping
- * dots subtle, delicate, and non-distracting at low zoom levels.
+ * AdaptiveBackground keeps background dots visually constant on screen:
+ * exact same dot size, exact same dot spacing, and exact same color
+ * across all zoom levels.
  */
 const AdaptiveBackground: React.FC<{ isDark: boolean }> = ({ isDark }) => {
   const { zoom } = useViewport();
 
-  // Multi-tier Level of Detail (LOD) grid gap to maintain ~20-25px visual spacing on screen
+  // Constant screen spacing (~24px) regardless of zoom level
   const gap = useMemo(() => {
-    if (zoom < 0.35) return 96;
-    if (zoom < 0.6) return 48;
-    return 24;
+    const currentZoom = Math.max(zoom, 0.05);
+    return 24 / currentZoom;
   }, [zoom]);
 
-  // Scaled pattern size: delicate at low zoom (~1.1px diameter) and crisp at normal zoom (~1.4px)
+  // Constant screen dot diameter (~1.6px) regardless of zoom level
   const size = useMemo(() => {
-    const targetPx = zoom < 0.45 ? 1.1 : 1.4;
-    return Math.max(0.8, targetPx / Math.max(zoom, 0.08));
+    const currentZoom = Math.max(zoom, 0.05);
+    return 1.6 / currentZoom;
   }, [zoom]);
 
-  // Soft, low-contrast colors that fade gently at low zoom without dominating the canvas
-  const color = useMemo(() => {
-    if (isDark) {
-      return zoom < 0.45 ? 'rgba(148, 163, 184, 0.07)' : 'rgba(148, 163, 184, 0.12)';
-    }
-    return zoom < 0.45 ? 'rgba(100, 116, 139, 0.09)' : 'rgba(100, 116, 139, 0.16)';
-  }, [isDark, zoom]);
+  // Constant, clearly visible colors regardless of zoom
+  const color = isDark ? '#2b384c' : '#cbd5e1';
 
   return (
     <Background
