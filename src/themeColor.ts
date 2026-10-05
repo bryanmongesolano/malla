@@ -57,56 +57,16 @@ export function blendColors(overlayColor: string, baseColor: string): string {
 }
 
 /**
- * Dynamically queries computed background colors from the DOM.
+ * Returns the base surface solid color (slate-950 for dark, white for light).
  */
 export function getComputedSurfaceColor(isDark: boolean): string {
-  if (typeof document === 'undefined') {
-    return isDark ? '#020617' : '#ffffff';
-  }
-  try {
-    const temp = document.createElement('div');
-    temp.className = isDark ? 'dark bg-slate-950' : 'bg-white';
-    temp.style.position = 'fixed';
-    temp.style.top = '-9999px';
-    temp.style.left = '-9999px';
-    temp.style.visibility = 'hidden';
-    temp.style.pointerEvents = 'none';
-    document.body.appendChild(temp);
-    const comp = window.getComputedStyle(temp).backgroundColor;
-    document.body.removeChild(temp);
-    if (comp && comp !== 'rgba(0, 0, 0, 0)' && comp !== 'transparent') {
-      return comp;
-    }
-  } catch {
-    // fallback
-  }
   return isDark ? '#020617' : '#ffffff';
 }
 
 /**
- * Dynamically queries the simulation amber overlay color from Tailwind classes.
+ * Returns the simulation amber overlay color corresponding to Tailwind amber-500/20.
  */
 export function getComputedAmberOverlay(): string {
-  if (typeof document === 'undefined') {
-    return 'rgba(245, 158, 11, 0.20)';
-  }
-  try {
-    const temp = document.createElement('div');
-    temp.className = 'bg-amber-500/20';
-    temp.style.position = 'fixed';
-    temp.style.top = '-9999px';
-    temp.style.left = '-9999px';
-    temp.style.visibility = 'hidden';
-    temp.style.pointerEvents = 'none';
-    document.body.appendChild(temp);
-    const comp = window.getComputedStyle(temp).backgroundColor;
-    document.body.removeChild(temp);
-    if (comp && comp !== 'rgba(0, 0, 0, 0)' && comp !== 'transparent') {
-      return comp;
-    }
-  } catch {
-    // fallback
-  }
   return 'rgba(245, 158, 11, 0.20)';
 }
 

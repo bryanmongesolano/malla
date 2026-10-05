@@ -86,9 +86,6 @@ export function App() {
     const statusBarTint = document.getElementById('ios-status-bar-tint');
     if (statusBarTint) {
       statusBarTint.style.backgroundColor = topbarColor;
-      statusBarTint.style.display = 'none';
-      void statusBarTint.offsetHeight;
-      statusBarTint.style.display = 'block';
     }
 
     // 4. Update the EXISTING theme-color meta tag (updates Safari bottom URL bar and Chrome/Android)
