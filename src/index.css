@@ -3,9 +3,13 @@
 @import "tailwindcss/utilities";
 @import "@xyflow/react/dist/style.css";
 
-/* Global touch highlight and outline reset */
+/* Global touch highlight, outline reset, and eliminate 300ms double-tap delay */
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root, .react-flow, .react-flow__node {
+  touch-action: manipulation;
 }
 
 button:focus {

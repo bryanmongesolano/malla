@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   ReactFlow,
   Background,
@@ -14,7 +14,6 @@ import { CourseNode } from './CourseNode.js';
 import { ElectiveBlockNode } from './ElectiveBlockNode.js';
 import { ElectiveSheet } from './ElectiveSheet.js';
 import { CanvasControls } from './Controls.js';
-import { CanvasGestures } from './CanvasGestures.js';
 import type { FullClientState } from '../api.js';
 import type { FilterMode } from './Header.js';
 
@@ -111,53 +110,13 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     return getCoursesUnlockedByCursando(model, state.progress);
   }, [model, state.progress]);
 
-  // Single-tap selection with double-tap cancellation (so double-tap zoom doesn't select/toggle node)
-  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastClickTimeRef = useRef<number>(0);
-  const lastClickNodeIdRef = useRef<string | null>(null);
-
+  // Instant node selection on tap (0ms delay, no double-tap wait)
   const handleNodeClick = useCallback((_event: React.MouseEvent, node: { id: string }) => {
-    const now = Date.now();
-    const timeSinceLast = now - lastClickTimeRef.current;
-    const isQuickDoubleTap = timeSinceLast < 280 && lastClickNodeIdRef.current === node.id;
-
-    lastClickTimeRef.current = now;
-    lastClickNodeIdRef.current = node.id;
-
-    if (isQuickDoubleTap) {
-      // User is double-tapping on this course to zoom in.
-      // Cancel the pending single-tap selection!
-      if (clickTimerRef.current) {
-        clearTimeout(clickTimerRef.current);
-        clickTimerRef.current = null;
-      }
-      return;
-    }
-
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
-    }
-
-    clickTimerRef.current = setTimeout(() => {
-      setSelectedId(prev => (prev === node.id ? null : node.id));
-      clickTimerRef.current = null;
-    }, 250);
+    setSelectedId(prev => (prev === node.id ? null : node.id));
   }, []);
 
   const handlePaneClick = useCallback(() => {
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
-      clickTimerRef.current = null;
-    }
     setSelectedId(null);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (clickTimerRef.current) {
-        clearTimeout(clickTimerRef.current);
-      }
-    };
   }, []);
 
   // Selected item and transition checks for the vertical action stack
@@ -428,7 +387,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         fitViewOptions={{ padding: 0.18 }}
         minZoom={0.15}
         maxZoom={2.5}
-        zoomOnDoubleClick={true}
+        zoomOnDoubleClick={false}
         zoomOnPinch={true}
         panOnDrag={true}
         panOnScroll={false}
@@ -455,7 +414,6 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           layoutMode={layoutMode}
           onSetLayoutMode={onSetLayoutMode}
         />
-        <CanvasGestures />
       </ReactFlow>
 
       {/* Elective block options modal sheet */}
