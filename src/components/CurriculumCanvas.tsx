@@ -1,10 +1,13 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   ReactFlow,
+  ReactFlowProvider,
+  useReactFlow,
   Background,
   BackgroundVariant,
   useViewport,
   PanOnScrollMode,
+  getViewportForBounds,
   type NodeTypes
 } from '@xyflow/react';
 import type { ElectiveBlock, CurriculumItem } from '@shared/types.js';
@@ -70,7 +73,7 @@ interface CurriculumCanvasProps {
   onShowAlert: (msg: string) => void;
 }
 
-export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
+const CurriculumCanvasInner: React.FC<CurriculumCanvasProps> = ({
   state,
   layoutMode,
   filterMode,
@@ -83,10 +86,71 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
   onUpdateCourseStatus,
   onShowAlert
 }) => {
+  const { fitView, getNodes, getNodesBounds, setCenter, getZoom } = useReactFlow();
+  const containerRef = useRef<HTMLDivElement>(null);
   const model = useMemo(() => new CurriculumModel(state.curriculum), [state.curriculum]);
 
   // Currently selected node for highlighting route
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Exact fit zoom calculation using React Flow's native layout engine
+  const calculateBaselineZoom = useCallback(() => {
+    const nodes = getNodes();
+    if (!nodes || nodes.length === 0) return 0.25;
+    const bounds = getNodesBounds(nodes);
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect || !rect.width || !rect.height) return 0.25;
+    const vp = getViewportForBounds(bounds, rect.width, rect.height, 0.15, 2.5, 0.18);
+    return vp.zoom;
+  }, [getNodes, getNodesBounds]);
+
+  const prevSelectedIdRef = useRef<string | null>(null);
+  const isInitialMountRef = useRef(true);
+
+  // Reset selection on layout mode change
+  useEffect(() => {
+    setSelectedId(null);
+  }, [layoutMode]);
+
+  // Zoom and pan to subject on selection/switch, return to overview on deselect
+  useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      prevSelectedIdRef.current = selectedId;
+      return;
+    }
+
+    if (prevSelectedIdRef.current === selectedId) {
+      return;
+    }
+    const prevId = prevSelectedIdRef.current;
+    prevSelectedIdRef.current = selectedId;
+
+    if (!selectedId) {
+      // Subject deselected -> return to general overview
+      if (prevId !== null) {
+        fitView({ padding: 0.18, duration: 400 });
+      }
+      return;
+    }
+
+    // Subject selected or switched -> zoom and move smoothly
+    const nodes = getNodes();
+    const targetNode = nodes.find(n => n.id === selectedId);
+    if (!targetNode) return;
+
+    const bounds = getNodesBounds([targetNode]);
+    const targetX = bounds.x + bounds.width / 2;
+    const targetY = bounds.y + bounds.height / 2;
+
+    const currentBaseline = calculateBaselineZoom();
+    const currentZoom = getZoom();
+    const targetZoom = Math.min(Math.max(currentBaseline * 2.5, 0.82), 1.05);
+    const effectiveZoom = currentZoom > targetZoom ? Math.min(currentZoom, 1.2) : targetZoom;
+    const duration = prevId ? 300 : 400;
+
+    setCenter(targetX, targetY, { zoom: effectiveZoom, duration });
+  }, [selectedId, fitView, getNodes, getNodesBounds, getZoom, setCenter, calculateBaselineZoom]);
 
   // ElectiveSheet modal state (for elective blocks)
   const [sheetBlock, setSheetBlock] = useState<ElectiveBlock | null>(null);
@@ -377,7 +441,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
   }, [rawEdges, selectedId, ancestors, directDependents, state.statuses, unlockedByCursando, layoutMode, isDark]);
 
   return (
-    <div className="relative w-full h-full bg-slate-100 dark:bg-slate-950 overflow-hidden select-none transition-colors duration-200">
+    <div ref={containerRef} className="relative w-full h-full bg-slate-100 dark:bg-slate-950 overflow-hidden select-none transition-colors duration-200">
       <ReactFlow
         nodes={displayNodes}
         edges={displayEdges}
@@ -443,3 +507,9 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     </div>
   );
 };
+
+export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = (props) => (
+  <ReactFlowProvider>
+    <CurriculumCanvasInner {...props} />
+  </ReactFlowProvider>
+);

@@ -373,14 +373,6 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
         const nextNode = findNextNodeInDirection(currentNode, nodes, navDir, getNodesBounds);
         if (nextNode) {
           onSelectNode(nextNode.id);
-
-          // If currently zoomed in, maintain the new node centered
-          if (zoom > baselineFitZoom + 0.04) {
-            const nextBounds = getNodesBounds([nextNode]);
-            const targetX = nextBounds.x + nextBounds.width / 2;
-            const targetY = nextBounds.y + nextBounds.height / 2;
-            setCenter(targetX, targetY, { zoom, duration: 250 });
-          }
         }
         return;
       }
