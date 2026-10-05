@@ -26,7 +26,8 @@ export async function fetchState(): Promise<FullClientState> {
 
   if (!res.ok) {
     if (res.status === 401) {
-      window.location.reload();
+      // Si la sesión expiró o no existe, redirigir al flujo de login del gate Authentik
+      window.location.href = `/outpost.goauthentik.io/start?rd=${encodeURIComponent(window.location.pathname)}`;
       throw new Error('Sesión expirada o no autenticada');
     }
     throw new Error(`Error del servidor (${res.status}) al obtener el estado`);
