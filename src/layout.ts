@@ -3,7 +3,7 @@ import type { Curriculum, CurriculumItem } from '@shared/types.js';
 import { computeDependencyLevels, getDirectPrereqs } from '@shared/graph.js';
 import { CurriculumModel, isElectiveBlock } from '@shared/curriculum.js';
 
-export type LayoutMode = 'tree' | 'cuatrimestres';
+export type LayoutMode = 'tree' | 'horizontal' | 'cuatrimestres';
 
 export interface LayoutOptions {
   nodeWidth?: number;
@@ -18,28 +18,88 @@ export function buildNodesAndEdges(
   const model = new CurriculumModel(curriculum);
   const levels = computeDependencyLevels(model);
 
-  const NODE_WIDTH = options.nodeWidth || 180;
-  const NODE_HEIGHT = options.nodeHeight || 72;
-
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  if (mode === 'tree') {
-    // Group courses by level
-    const byLevel: Record<number, CurriculumItem[]> = {};
-    for (const item of curriculum.courses) {
-      const lvl = levels[item.id] || 0;
-      if (!byLevel[lvl]) byLevel[lvl] = [];
-      byLevel[lvl].push(item);
+  // Group items by dependency level
+  const byLevel: Record<number, CurriculumItem[]> = {};
+  for (const item of curriculum.courses) {
+    const lvl = levels[item.id] || 0;
+    if (!byLevel[lvl]) byLevel[lvl] = [];
+    byLevel[lvl].push(item);
+  }
+
+  const sortedLevels = Object.keys(byLevel)
+    .map(Number)
+    .sort((a, b) => a - b);
+  const maxLevel = sortedLevels[sortedLevels.length - 1] ?? 0;
+
+  // Optimize vertical order within levels using barycenter heuristic (minimizes line crossings)
+  const nodeOrderIdx: Record<string, number> = {};
+  if (byLevel[0]) {
+    byLevel[0].forEach((item, idx) => {
+      nodeOrderIdx[item.id] = idx;
+    });
+  }
+
+  for (let lvl = 1; lvl <= maxLevel; lvl++) {
+    const items = byLevel[lvl];
+    if (!items) continue;
+    items.sort((a, b) => {
+      const prereqsA = getDirectPrereqs(a.id, model);
+      const prereqsB = getDirectPrereqs(b.id, model);
+      const avgA = prereqsA.length > 0
+        ? prereqsA.reduce((sum, pId) => sum + (nodeOrderIdx[pId] ?? 0), 0) / prereqsA.length
+        : 0;
+      const avgB = prereqsB.length > 0
+        ? prereqsB.reduce((sum, pId) => sum + (nodeOrderIdx[pId] ?? 0), 0) / prereqsB.length
+        : 0;
+      return avgA - avgB;
+    });
+    items.forEach((item, idx) => {
+      nodeOrderIdx[item.id] = idx;
+    });
+  }
+
+  const isHorizontal = mode === 'horizontal' || mode === 'cuatrimestres';
+
+  if (isHorizontal) {
+    // Compact Horizontal View (Left to Right flow across dependency columns)
+    const NODE_WIDTH = options.nodeWidth || 172;
+    const NODE_HEIGHT = options.nodeHeight || 58;
+    const COL_GAP = 58;
+    const ROW_GAP = 14;
+
+    let maxCountInCol = 0;
+    for (const lvl of sortedLevels) {
+      maxCountInCol = Math.max(maxCountInCol, byLevel[lvl].length);
     }
+    const maxColHeight = maxCountInCol * (NODE_HEIGHT + ROW_GAP);
 
+    for (const lvl of sortedLevels) {
+      const items = byLevel[lvl];
+      const count = items.length;
+      const colHeight = count * (NODE_HEIGHT + ROW_GAP);
+      const startY = (maxColHeight - colHeight) / 2;
+      const x = lvl * (NODE_WIDTH + COL_GAP);
+
+      items.forEach((item, rowIdx) => {
+        const y = startY + rowIdx * (NODE_HEIGHT + ROW_GAP);
+        nodes.push({
+          id: item.id,
+          type: isElectiveBlock(item) ? 'electiveBlock' : 'course',
+          position: { x, y },
+          data: { item, level: lvl, layoutMode: 'horizontal' },
+          draggable: false
+        });
+      });
+    }
+  } else {
+    // Tree View (Top to Bottom hierarchical flow)
+    const NODE_WIDTH = options.nodeWidth || 184;
+    const NODE_HEIGHT = options.nodeHeight || 72;
     const HORIZ_GAP = 36;
-    const VERT_GAP = 90;
-
-    // Find max width among levels to center levels
-    const sortedLevels = Object.keys(byLevel)
-      .map(Number)
-      .sort((a, b) => a - b);
+    const VERT_GAP = 96;
 
     let maxLevelWidth = 0;
     for (const lvl of sortedLevels) {
@@ -61,40 +121,14 @@ export function buildNodesAndEdges(
           id: item.id,
           type: isElectiveBlock(item) ? 'electiveBlock' : 'course',
           position: { x, y },
-          data: { item, level: lvl },
-          draggable: false
-        });
-      });
-    }
-  } else {
-    // Cuatrimestre columns layout
-    const COL_GAP = 50;
-    const ROW_GAP = 28;
-
-    const byPeriod: Record<number, CurriculumItem[]> = {};
-    for (const item of curriculum.courses) {
-      if (!byPeriod[item.period]) byPeriod[item.period] = [];
-      byPeriod[item.period].push(item);
-    }
-
-    for (let p = 1; p <= curriculum.periods; p++) {
-      const items = byPeriod[p] || [];
-      const x = (p - 1) * (NODE_WIDTH + COL_GAP);
-
-      items.forEach((item, rowIdx) => {
-        const y = rowIdx * (NODE_HEIGHT + ROW_GAP);
-        nodes.push({
-          id: item.id,
-          type: isElectiveBlock(item) ? 'electiveBlock' : 'course',
-          position: { x, y },
-          data: { item, period: p },
+          data: { item, level: lvl, layoutMode: 'tree' },
           draggable: false
         });
       });
     }
   }
 
-  // Generate Edges for prerequisites
+  // Generate prerequisite edges with smoothstep curvature
   for (const item of curriculum.courses) {
     const prereqs = getDirectPrereqs(item.id, model);
     for (const prereqId of prereqs) {

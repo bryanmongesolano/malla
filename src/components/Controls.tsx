@@ -173,11 +173,11 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           )}
         </div>
 
-        {/* 3. Layout Mode Toggle (icon only: Árbol / Cuatrimestres) */}
+        {/* 3. Layout Mode Toggle (icon only: Árbol / Horizontal) */}
         <button
-          onClick={() => onSetLayoutMode(layoutMode === 'tree' ? 'cuatrimestres' : 'tree')}
+          onClick={() => onSetLayoutMode(layoutMode === 'tree' ? 'horizontal' : 'tree')}
           className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/95 dark:bg-slate-900/90 text-slate-600 dark:text-slate-300 shadow-xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
-          title={layoutMode === 'tree' ? 'Cambiar a vista Cuatris' : 'Cambiar a vista Árbol'}
+          title={layoutMode === 'tree' ? 'Cambiar a vista Horizontal' : 'Cambiar a vista Árbol'}
         >
           {layoutMode === 'tree' ? (
             <GitFork className="w-5 h-5 text-slate-600 dark:text-slate-300" />

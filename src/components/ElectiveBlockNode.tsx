@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import type { ElectiveBlock, CourseStatus } from '@shared/types.js';
+import type { LayoutMode } from '../layout.js';
 
 export interface ElectiveBlockNodeData extends Record<string, unknown> {
   item: ElectiveBlock;
@@ -11,6 +12,7 @@ export interface ElectiveBlockNodeData extends Record<string, unknown> {
   isDimmed: boolean;
   isFiltered: boolean;
   highlightRole: 'selected' | 'ancestor' | 'dependent' | null;
+  layoutMode?: LayoutMode;
 }
 
 export type ElectiveBlockNodeType = Node<ElectiveBlockNodeData, 'electiveBlock'>;
@@ -24,8 +26,11 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
     isUnlockedByCursando,
     isDimmed,
     isFiltered,
-    highlightRole
+    highlightRole,
+    layoutMode
   } = data;
+
+  const isHorizontal = layoutMode === 'horizontal' || layoutMode === 'cuatrimestres';
 
   let statusStyles = '';
   switch (status) {
@@ -71,27 +76,29 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
     opacityStyles = 'opacity-25';
   }
 
+  const dimensions = isHorizontal ? 'w-[172px] h-[58px] px-2.5 py-1' : 'w-[184px] h-[72px] px-3 py-1.5';
+
   return (
     <div
-      className={`relative w-[184px] h-[72px] rounded-xl border-2 border-dashed px-3 py-1.5 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
+      className={`relative ${dimensions} rounded-xl border-2 border-dashed flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
       title={`${item.name} (${completedCount}/${item.required}${isPrereqsMet === false && status === 'suficiencia' ? ' [Requisitos pendientes]' : ''}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`}
     >
       <Handle
         type="target"
-        position={Position.Top}
+        position={isHorizontal ? Position.Left : Position.Top}
         className="!w-2 !h-2 !bg-slate-400 !border-none !opacity-0"
       />
 
-      <span className="text-[12px] font-semibold leading-tight line-clamp-2 pointer-events-none">
+      <span className="text-[11.5px] sm:text-[12px] font-semibold leading-tight line-clamp-2 pointer-events-none">
         {item.name}
       </span>
-      <span className="text-[10px] mt-0.5 font-mono px-2 py-0.2 rounded-full bg-slate-200/90 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 pointer-events-none font-semibold">
+      <span className="text-[9.5px] mt-0.5 font-mono px-1.5 py-0.2 rounded-full bg-slate-200/90 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 pointer-events-none font-semibold">
         {completedCount} / {item.required}
       </span>
 
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={isHorizontal ? Position.Right : Position.Bottom}
         className="!w-2 !h-2 !bg-slate-400 !border-none !opacity-0"
       />
     </div>

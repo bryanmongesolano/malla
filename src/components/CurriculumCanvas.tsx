@@ -183,7 +183,8 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
             isDimmed,
             isFiltered,
             isUnlockedByCursando,
-            highlightRole
+            highlightRole,
+            layoutMode
           }
         };
       }
@@ -197,7 +198,8 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           isDimmed,
           isFiltered,
           isUnlockedByCursando,
-          highlightRole
+          highlightRole,
+          layoutMode
         }
       };
     });
@@ -210,11 +212,14 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     ancestors,
     directDependents,
     filterMode,
-    unlockedByCursando
+    unlockedByCursando,
+    layoutMode
   ]);
 
   // Decorate edges with highlight styling
   const displayEdges = useMemo(() => {
+    const isHorizontal = layoutMode === 'horizontal' || layoutMode === 'cuatrimestres';
+
     return rawEdges.map(edge => {
       const sourceId = edge.source;
       const targetId = edge.target;
@@ -224,26 +229,44 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         state.statuses[sourceId] === 'cursando' &&
         unlockedByCursando.has(targetId);
 
+      const pathOptions = { borderRadius: 16 };
+
       if (!selectedId) {
+        if (isHorizontal) {
+          // Horizontal View: Clean, neutral lines without color clutter
+          return {
+            ...edge,
+            pathOptions,
+            style: {
+              stroke: isDark ? '#475569' : '#94a3b8',
+              strokeWidth: 1.5,
+              opacity: isDark ? 0.35 : 0.4
+            }
+          };
+        }
+
+        // Tree View: Subtle status indications
         if (isCursandoUnlockEdge) {
           return {
             ...edge,
+            pathOptions,
             animated: true,
             style: {
               stroke: '#f59e0b',
-              strokeWidth: 3,
+              strokeWidth: 2.5,
               strokeDasharray: '6,4',
-              opacity: 1
+              opacity: 0.9
             }
           };
         }
 
         return {
           ...edge,
+          pathOptions,
           style: {
-            stroke: sourceCompleted ? '#10b981' : '#475569',
-            strokeWidth: sourceCompleted ? 2.5 : 1.5,
-            opacity: sourceCompleted ? 0.8 : 0.4
+            stroke: sourceCompleted ? '#10b981' : (isDark ? '#475569' : '#94a3b8'),
+            strokeWidth: sourceCompleted ? 2.2 : 1.5,
+            opacity: sourceCompleted ? 0.75 : 0.35
           }
         };
       }
@@ -261,6 +284,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         if (isCursandoUnlockEdge) {
           return {
             ...edge,
+            pathOptions,
             animated: true,
             style: {
               stroke: '#f59e0b',
@@ -272,6 +296,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         }
         return {
           ...edge,
+          pathOptions,
           animated: true,
           style: {
             stroke: '#c084fc',
@@ -285,6 +310,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         if (isCursandoUnlockEdge) {
           return {
             ...edge,
+            pathOptions,
             animated: true,
             style: {
               stroke: '#f59e0b',
@@ -296,6 +322,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         }
         return {
           ...edge,
+          pathOptions,
           animated: true,
           style: {
             stroke: '#22d3ee',
@@ -308,27 +335,29 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
       if (isCursandoUnlockEdge) {
         return {
           ...edge,
+          pathOptions,
           animated: true,
           style: {
             stroke: '#f59e0b',
-            strokeWidth: 2,
+            strokeWidth: 1.5,
             strokeDasharray: '5,4',
-            opacity: 0.45
+            opacity: 0.3
           }
         };
       }
 
-      // Dimmed edge
+      // Dimmed unrelated edge
       return {
         ...edge,
+        pathOptions,
         style: {
-          stroke: '#334155',
+          stroke: isDark ? '#1e293b' : '#cbd5e1',
           strokeWidth: 1,
-          opacity: 0.12
+          opacity: isDark ? 0.08 : 0.15
         }
       };
     });
-  }, [rawEdges, selectedId, ancestors, directDependents, state.statuses, unlockedByCursando]);
+  }, [rawEdges, selectedId, ancestors, directDependents, state.statuses, unlockedByCursando, layoutMode, isDark]);
 
   return (
     <div className="relative w-full h-full bg-slate-100 dark:bg-slate-950 overflow-hidden select-none transition-colors duration-200">

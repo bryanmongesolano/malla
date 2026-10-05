@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import type { StandardCourse, CourseStatus } from '@shared/types.js';
+import type { LayoutMode } from '../layout.js';
 
 export interface CourseNodeData extends Record<string, unknown> {
   item: StandardCourse;
@@ -10,6 +11,7 @@ export interface CourseNodeData extends Record<string, unknown> {
   isDimmed: boolean;
   isFiltered: boolean;
   highlightRole: 'selected' | 'ancestor' | 'dependent' | null;
+  layoutMode?: LayoutMode;
 }
 
 export type CourseNodeType = Node<CourseNodeData, 'course'>;
@@ -22,8 +24,11 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
     isUnlockedByCursando,
     isDimmed,
     isFiltered,
-    highlightRole
+    highlightRole,
+    layoutMode
   } = data;
+
+  const isHorizontal = layoutMode === 'horizontal' || layoutMode === 'cuatrimestres';
 
   // Base state styles (background, text, border)
   let statusStyles = '';
@@ -74,24 +79,26 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
     opacityStyles = 'opacity-25';
   }
 
+  const dimensions = isHorizontal ? 'w-[172px] h-[58px] px-2.5 py-1.5' : 'w-[184px] h-[72px] px-3 py-2';
+
   return (
     <div
-      className={`relative w-[184px] h-[72px] rounded-xl border-2 px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
+      className={`relative ${dimensions} rounded-xl border-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
       title={`${item.name} (${status}${isPrereqsMet === false && status === 'suficiencia' ? ' [Requisitos pendientes]' : ''}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`}
     >
       <Handle
         type="target"
-        position={Position.Top}
+        position={isHorizontal ? Position.Left : Position.Top}
         className="!w-2 !h-2 !bg-slate-400 !border-none !opacity-0"
       />
 
-      <span className="text-[12px] font-semibold leading-tight line-clamp-2 pointer-events-none">
+      <span className="text-[11.5px] sm:text-[12px] font-semibold leading-tight line-clamp-2 pointer-events-none">
         {item.name}
       </span>
 
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={isHorizontal ? Position.Right : Position.Bottom}
         className="!w-2 !h-2 !bg-slate-400 !border-none !opacity-0"
       />
     </div>
