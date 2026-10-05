@@ -3,8 +3,6 @@ import {
   ReactFlow,
   Background,
   BackgroundVariant,
-  useNodesState,
-  useEdgesState,
   type NodeTypes
 } from '@xyflow/react';
 import type { StandardCourse, ElectiveBlock, CurriculumItem } from '@shared/types.js';
@@ -28,6 +26,7 @@ interface CurriculumCanvasProps {
   state: FullClientState;
   layoutMode: LayoutMode;
   filterMode: FilterMode;
+  isDark: boolean;
   onUpdateCourseStatus: (itemId: string, status: 'disponible' | 'cursando' | 'completada') => Promise<void>;
   onError: (msg: string) => void;
 }
@@ -36,6 +35,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
   state,
   layoutMode,
   filterMode,
+  isDark,
   onUpdateCourseStatus,
   onError
 }) => {
@@ -216,26 +216,27 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     });
   }, [rawEdges, selectedId, ancestors, directDependents, state.statuses]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(displayNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(displayEdges);
-
-  // Sync state changes into nodes and edges
-  React.useEffect(() => {
-    setNodes(displayNodes);
-  }, [displayNodes, setNodes]);
-
-  React.useEffect(() => {
-    setEdges(displayEdges);
-  }, [displayEdges, setEdges]);
-
   return (
-    <div className="relative w-full h-[calc(100vh-68px)] bg-slate-950 overflow-hidden select-none">
+    <div className="relative w-full h-[calc(100vh-68px)] bg-slate-100 dark:bg-slate-950 overflow-hidden select-none transition-colors duration-200">
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={displayNodes}
+        edges={displayEdges}
         nodeTypes={nodeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        onNodeClick={(_event, node) => handleSelect(node.id)}
+        onNodeDoubleClick={(_event, node) => {
+          const item = model.getItem(node.id);
+          if (item) {
+            if (isElectiveBlock(item)) {
+              setSheetBlock(item);
+            } else {
+              const domNode = document.querySelector(`[data-id="${node.id}"]`);
+              const rect = domNode
+                ? domNode.getBoundingClientRect()
+                : new DOMRect(window.innerWidth / 2, window.innerHeight / 2, 0, 0);
+              setMenuCourse({ item, anchor: rect });
+            }
+          }
+        }}
         onPaneClick={() => setSelectedId(null)}
         fitView
         fitViewOptions={{ padding: 0.2 }}
@@ -247,7 +248,12 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
         nodesConnectable={false}
         elementsSelectable={false}
       >
-        <Background variant={BackgroundVariant.Dots} gap={24} size={1.2} color="#1e293b" />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={24}
+          size={1.2}
+          color={isDark ? "#1e293b" : "#cbd5e1"}
+        />
         <CanvasControls />
       </ReactFlow>
 

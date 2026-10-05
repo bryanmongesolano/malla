@@ -35,23 +35,23 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
   let statusStyles = '';
   switch (status) {
     case 'completada':
-      statusStyles = 'bg-emerald-950/90 text-emerald-100 border-emerald-500 shadow-emerald-950/40';
+      statusStyles = 'bg-emerald-100/95 text-emerald-950 border-emerald-500 shadow-emerald-900/10 dark:bg-emerald-950/90 dark:text-emerald-100 dark:border-emerald-500 dark:shadow-emerald-950/40';
       break;
     case 'cursando':
-      statusStyles = 'bg-amber-950/90 text-amber-100 border-amber-500 shadow-amber-950/40 ring-1 ring-amber-400/40';
+      statusStyles = 'bg-amber-100/95 text-amber-950 border-amber-500 shadow-amber-900/10 ring-1 ring-amber-400 dark:bg-amber-950/90 dark:text-amber-100 dark:border-amber-500 dark:shadow-amber-950/40 dark:ring-amber-400/40';
       break;
     case 'disponible':
-      statusStyles = 'bg-sky-950/90 text-sky-100 border-sky-500 shadow-sky-950/40';
+      statusStyles = 'bg-sky-100/95 text-sky-950 border-sky-500 shadow-sky-900/10 dark:bg-sky-950/90 dark:text-sky-100 dark:border-sky-500 dark:shadow-sky-950/40';
       break;
     case 'bloqueada':
     default:
-      statusStyles = 'bg-slate-900/90 text-slate-400 border-slate-700/80';
+      statusStyles = 'bg-slate-200/90 text-slate-500 border-slate-300 dark:bg-slate-900/90 dark:text-slate-400 dark:border-slate-700/80';
       break;
   }
 
   let highlightStyles = '';
   if (highlightRole === 'selected') {
-    highlightStyles = 'ring-4 ring-white shadow-2xl scale-[1.03] z-30';
+    highlightStyles = 'ring-4 ring-cyan-500 dark:ring-white shadow-2xl scale-[1.04] z-30';
   } else if (highlightRole === 'ancestor') {
     highlightStyles = 'ring-4 ring-purple-500 shadow-lg shadow-purple-500/50 scale-[1.02] z-20';
   } else if (highlightRole === 'dependent') {
@@ -60,7 +60,7 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
 
   let opacityStyles = 'opacity-100';
   if (isFiltered) {
-    opacityStyles = 'opacity-10 pointer-events-none grayscale';
+    opacityStyles = 'opacity-15 pointer-events-none grayscale';
   } else if (isDimmed && !highlightRole) {
     opacityStyles = 'opacity-25';
   }
@@ -69,8 +69,13 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
     <div
       ref={nodeRef}
       {...gestures}
-      className={`relative w-[180px] h-[72px] rounded-xl border-2 border-dashed px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
-      title={`${item.name} (${completedCount}/${item.required})`}
+      onClick={() => onSelect(item.id)}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        onOpenSheet(item.id);
+      }}
+      className={`relative w-[184px] min-h-[76px] rounded-xl border-2 border-dashed px-3 py-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md nodrag nopan ${statusStyles} ${highlightStyles} ${opacityStyles}`}
+      title={`${item.name} (${completedCount}/${item.required}) — Tap para seleccionar, Doble-tap para ver materias`}
     >
       <Handle
         type="target"
@@ -81,9 +86,21 @@ export const ElectiveBlockNode = memo(({ data }: NodeProps<ElectiveBlockNodeType
       <span className="text-[12px] font-semibold leading-tight line-clamp-2 pointer-events-none">
         {item.name}
       </span>
-      <span className="text-[10px] mt-1 font-mono px-2 py-0.5 rounded-full bg-slate-900/60 border border-slate-700/50 text-slate-300 pointer-events-none">
+      <span className="text-[10px] mt-0.5 font-mono px-2 py-0.5 rounded-full bg-slate-200/90 dark:bg-slate-900/60 border border-slate-300 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 pointer-events-none font-semibold">
         {completedCount} / {item.required}
       </span>
+
+      {highlightRole === 'selected' && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenSheet(item.id);
+          }}
+          className="mt-1 px-2.5 py-0.5 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold shadow-md cursor-pointer flex items-center gap-1 transition-transform active:scale-95"
+        >
+          <span>Ver materias</span>
+        </button>
+      )}
 
       <Handle
         type="source"

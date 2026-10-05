@@ -124,12 +124,14 @@ if (fs.existsSync(distPath)) {
   });
 }
 
-const PORT = parseInt(process.env.PORT || '3009', 10);
-console.log(`Starting server on http://localhost:${PORT}`);
+if (process.env.NODE_ENV !== 'test' && !process.env.VITEST) {
+  const PORT = parseInt(process.env.PORT || '3009', 10);
+  console.log(`Starting server on http://localhost:${PORT}`);
 
-serve({
-  fetch: app.fetch,
-  port: PORT
-});
+  serve({
+    fetch: app.fetch,
+    port: PORT
+  });
+}
 
 export default app;

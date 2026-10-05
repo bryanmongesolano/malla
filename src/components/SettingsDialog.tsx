@@ -30,30 +30,30 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
-      <div className="relative z-10 w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-2xl p-5 shadow-2xl">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
-          <div className="flex items-center gap-2 text-slate-100 font-bold">
-            <Sliders className="w-5 h-5 text-cyan-400" />
+      <div className="relative z-10 w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-2xl">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold">
+            <Sliders className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             <h3>Configuración de Simulación</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">
+            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
               Materias cursadas por cuatrimestre
             </label>
-            <p className="text-[11px] text-slate-400 mb-3">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
               Define tu ritmo estimado de estudio. La simulación respetará la ruta crítica y prerrequisitos.
             </p>
 
-            <div className="flex items-center justify-between gap-4 bg-slate-950 p-3 rounded-xl border border-slate-800">
+            <div className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
               <input
                 type="range"
                 min="1"
@@ -61,9 +61,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
                 step="1"
                 value={coursesPerPeriod}
                 onChange={e => setCoursesPerPeriod(parseInt(e.target.value, 10))}
-                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-600 dark:accent-cyan-500"
               />
-              <span className="text-xl font-bold font-mono text-cyan-400 w-8 text-center">
+              <span className="text-xl font-bold font-mono text-cyan-600 dark:text-cyan-400 w-8 text-center">
                 {coursesPerPeriod}
               </span>
             </div>
@@ -73,14 +73,14 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-slate-800 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-1.5 transition-colors disabled:opacity-50"
+              className="px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
             >
               <Check className="w-4 h-4" />
               <span>{saving ? 'Guardando...' : 'Aplicar'}</span>

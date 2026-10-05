@@ -135,7 +135,7 @@ export function App() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="w-full h-full flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
       <Header
         overall={state.overall}
         simulation={state.simulation}
@@ -153,6 +153,7 @@ export function App() {
           state={state}
           layoutMode={layoutMode}
           filterMode={filterMode}
+          isDark={isDark}
           onUpdateCourseStatus={handleUpdateCourseStatus}
           onError={msg => setToastMsg(msg)}
         />
