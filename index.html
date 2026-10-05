@@ -14,13 +14,18 @@
           var saved = localStorage.getItem('malla_theme');
           var isDark = saved ? saved === 'dark' : true;
           var html = document.documentElement;
-          var meta = document.getElementById('theme-color-meta');
+          var color = isDark ? '#020617' : '#ffffff';
           if (isDark) {
             html.classList.add('dark');
-            if (meta) meta.setAttribute('content', '#020617');
+            html.style.colorScheme = 'dark';
           } else {
             html.classList.remove('dark');
-            if (meta) meta.setAttribute('content', '#ffffff');
+            html.style.colorScheme = 'light';
+          }
+          html.style.backgroundColor = color;
+          var meta = document.getElementById('theme-color-meta');
+          if (meta) {
+            meta.setAttribute('content', color);
           }
         } catch (e) {}
       })();

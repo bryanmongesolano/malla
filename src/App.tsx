@@ -60,7 +60,6 @@ export function App() {
   });
 
   useEffect(() => {
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     let color: string;
     if (isSimulationMode) {
       color = isDark ? '#261b0c' : '#fef0c7';
@@ -70,15 +69,30 @@ export function App() {
 
     if (isDark) {
       document.documentElement.classList.add('dark');
+      document.documentElement.style.colorScheme = 'dark';
       localStorage.setItem('malla_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.style.colorScheme = 'light';
       localStorage.setItem('malla_theme', 'light');
     }
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', color);
-    }
+
     document.documentElement.style.backgroundColor = color;
+    document.body.style.backgroundColor = color;
+
+    // Force iOS Safari to redraw status bar by recreating the theme-color meta element
+    document.querySelectorAll('meta[name="theme-color"]').forEach(el => el.remove());
+    const newMeta = document.createElement('meta');
+    newMeta.name = 'theme-color';
+    newMeta.id = 'theme-color-meta';
+    newMeta.content = color;
+    document.head.appendChild(newMeta);
+
+    // Update apple-mobile-web-app-status-bar-style for standalone mode
+    const appleStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (appleStatusMeta) {
+      appleStatusMeta.setAttribute('content', isDark ? 'black-translucent' : 'default');
+    }
   }, [isDark, isSimulationMode]);
 
   const loadData = useCallback(async (showLoader = false) => {

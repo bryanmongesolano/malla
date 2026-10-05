@@ -3,6 +3,14 @@
 @import "tailwindcss/utilities";
 @import "@xyflow/react/dist/style.css";
 
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
 /* Global touch highlight, outline reset, and eliminate 300ms double-tap delay */
 * {
   -webkit-tap-highlight-color: transparent;
