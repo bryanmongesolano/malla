@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-  Calendar,
-  Settings
-} from 'lucide-react';
+import { Settings } from 'lucide-react';
 import type { OverallProgress, SimulationResult } from '@shared/types.js';
 
 export type FilterMode = 'todas' | 'disponibles' | 'suficiencia' | 'ocultar_completadas';
@@ -31,16 +28,10 @@ export const Header: React.FC<HeaderProps> = ({
             />
           </div>
 
-          {/* Directly underneath: Date on left, data & green % on right */}
+          {/* Underneath: Metrics on left, percentage and graduation date on right */}
           <div className="flex items-center justify-between gap-2 text-xs flex-wrap">
-            {/* Left: Graduation date (only icon, month and year) */}
-            <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-              <span>{simulation.estimatedGraduationDate}</span>
-            </div>
-
-            {/* Right: Subtle dots + numbers, ending with percentage in green */}
-            <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
+            {/* Left: Course status counters */}
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
               <span className="inline-flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-medium" title="Completadas">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                 <span>{overall.completedUnits}</span>
@@ -63,10 +54,15 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-600 shrink-0" />
                 <span>{overall.blockedUnits}</span>
               </span>
+            </div>
 
-              {/* Percentage in progress bar green */}
-              <span className="text-xs font-mono font-bold text-emerald-500 dark:text-emerald-400 ml-1">
+            {/* Right: Percentage (in progress bar green) at the left of date, and graduation date */}
+            <div className="flex items-center gap-2.5 sm:gap-3 ml-auto shrink-0 font-medium">
+              <span className="text-xs font-mono font-bold text-emerald-500 dark:text-emerald-400">
                 {overall.percentCompleted}%
+              </span>
+              <span className="text-slate-600 dark:text-slate-400">
+                {simulation.estimatedGraduationDate}
               </span>
             </div>
           </div>
