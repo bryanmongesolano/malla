@@ -355,13 +355,14 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
         }
       }
 
-      // Arrow keys spatial navigation between subjects
-      if (
-        key === 'arrowup' ||
-        key === 'arrowdown' ||
-        key === 'arrowleft' ||
-        key === 'arrowright'
-      ) {
+      // Arrow keys and WASD spatial navigation between subjects
+      let navDir: 'arrowup' | 'arrowdown' | 'arrowleft' | 'arrowright' | null = null;
+      if (key === 'arrowup' || key === 'w') navDir = 'arrowup';
+      else if (key === 'arrowdown' || key === 's') navDir = 'arrowdown';
+      else if (key === 'arrowleft' || key === 'a') navDir = 'arrowleft';
+      else if (key === 'arrowright' || key === 'd') navDir = 'arrowright';
+
+      if (navDir) {
         if (!selectedItem || !onSelectNode) return;
         e.preventDefault();
 
@@ -369,7 +370,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
         const currentNode = nodes.find(n => n.id === selectedItem.id);
         if (!currentNode) return;
 
-        const nextNode = findNextNodeInDirection(currentNode, nodes, key, getNodesBounds);
+        const nextNode = findNextNodeInDirection(currentNode, nodes, navDir, getNodesBounds);
         if (nextNode) {
           onSelectNode(nextNode.id);
 
@@ -422,7 +423,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           return;
         }
 
-        if (key === 's' || key === '2') {
+        if (key === 'x' || key === '2') {
           e.preventDefault();
           if (selectedStatus === 'suficiencia') {
             if (!transitions?.base.allowed) {
@@ -440,7 +441,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
           return;
         }
 
-        if (key === 'd' || key === '1') {
+        if (key === 'r' || key === '1') {
           e.preventDefault();
           if (selectedStatus === baseStatus) return;
           if (!transitions?.base.allowed) {
@@ -633,7 +634,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
             {/* 1. Estado Base (Clock celeste si prereqs cumplidos, Lock gris si bloqueada) */}
             <ActionTooltip
               label={isPrereqsMet ? 'Disponible' : 'Bloqueada'}
-              shortcut="D"
+              shortcut="R"
               side="left"
             >
               <button
@@ -664,7 +665,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
             </ActionTooltip>
 
             {/* 2. Suficiencia (GraduationCap morado) */}
-            <ActionTooltip label="Suficiencia" shortcut="S" side="left">
+            <ActionTooltip label="Suficiencia" shortcut="X" side="left">
               <button
                 onClick={() => {
                   if (selectedStatus === 'suficiencia') {

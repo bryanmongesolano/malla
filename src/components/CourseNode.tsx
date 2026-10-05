@@ -86,7 +86,7 @@ export const CourseNode = memo(({ data }: NodeProps<CourseNodeType>) => {
       className={`relative ${dimensions} rounded-xl border-2 flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 select-none shadow-md ${statusStyles} ${highlightStyles} ${opacityStyles}`}
       title={
         highlightRole === 'selected'
-          ? `${item.name} (${status}) — Atajos: C (Completada), P (Cursando), S (Suficiencia), D (Base), Esc (Deseleccionar)`
+          ? `${item.name} (${status}) — Atajos: WASD/Flechas (Mover), C (Completada), P (Cursando), X (Suficiencia), R (Base), Esc (Deseleccionar)`
           : `${item.name} (${status}${isPrereqsMet === false && status === 'suficiencia' ? ' [Requisitos pendientes]' : ''}${isUnlockedByCursando ? ' — Desbloquea al aprobar cursando' : ''})`
       }
     >
