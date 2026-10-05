@@ -66,7 +66,11 @@ export function getComputedSurfaceColor(isDark: boolean): string {
   try {
     const temp = document.createElement('div');
     temp.className = isDark ? 'dark bg-slate-950' : 'bg-white';
-    temp.style.display = 'none';
+    temp.style.position = 'fixed';
+    temp.style.top = '-9999px';
+    temp.style.left = '-9999px';
+    temp.style.visibility = 'hidden';
+    temp.style.pointerEvents = 'none';
     document.body.appendChild(temp);
     const comp = window.getComputedStyle(temp).backgroundColor;
     document.body.removeChild(temp);
@@ -89,7 +93,11 @@ export function getComputedAmberOverlay(): string {
   try {
     const temp = document.createElement('div');
     temp.className = 'bg-amber-500/20';
-    temp.style.display = 'none';
+    temp.style.position = 'fixed';
+    temp.style.top = '-9999px';
+    temp.style.left = '-9999px';
+    temp.style.visibility = 'hidden';
+    temp.style.pointerEvents = 'none';
     document.body.appendChild(temp);
     const comp = window.getComputedStyle(temp).backgroundColor;
     document.body.removeChild(temp);

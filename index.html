@@ -6,15 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#020617" id="theme-color-meta" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>Malla Curricular — CENFOTEC</title>
     <script>
       (function() {
         try {
           var saved = localStorage.getItem('malla_theme');
           var isDark = saved ? saved === 'dark' : true;
+          var isSim = sessionStorage.getItem('malla_simulation_active') === 'true';
           var html = document.documentElement;
-          var color = isDark ? '#020617' : '#ffffff';
+          var color;
+          if (isSim) {
+            color = isDark ? '#332415' : '#f7e8cc';
+          } else {
+            color = isDark ? '#020617' : '#ffffff';
+          }
           if (isDark) {
             html.classList.add('dark');
             html.style.colorScheme = 'dark';

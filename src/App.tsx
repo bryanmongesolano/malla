@@ -60,6 +60,11 @@ export function App() {
     return saved ? saved === 'dark' : true;
   });
 
+  // Dynamically calculate the exact blended opaque color for topbar & iOS status bar
+  const topbarColor = useMemo(() => {
+    return computeThemeColor(isDark, isSimulationMode).color;
+  }, [isDark, isSimulationMode]);
+
   useEffect(() => {
     // 1. Toggle dark class first so DOM styles reflect the active theme
     if (isDark) {
@@ -72,28 +77,17 @@ export function App() {
       localStorage.setItem('malla_theme', 'light');
     }
 
-    // 2. Dynamically calculate the exact blended opaque color for topbar & iOS status bar
-    const { color, isDarkText } = computeThemeColor(isDark, isSimulationMode);
+    // 2. Set on html/body and CSS variable
+    document.documentElement.style.setProperty('--topbar-bg', topbarColor);
+    document.documentElement.style.backgroundColor = topbarColor;
+    document.body.style.backgroundColor = topbarColor;
 
-    // 3. Expose as CSS variable for Header and set on html/body for seamless overscroll
-    document.documentElement.style.setProperty('--topbar-bg', color);
-    document.documentElement.style.backgroundColor = color;
-    document.body.style.backgroundColor = color;
-
-    // 4. Force iOS Safari to update status bar by recreating theme-color meta tag with the solid color
-    document.querySelectorAll('meta[name="theme-color"]').forEach(el => el.remove());
-    const newMeta = document.createElement('meta');
-    newMeta.name = 'theme-color';
-    newMeta.id = 'theme-color-meta';
-    newMeta.content = color;
-    document.head.appendChild(newMeta);
-
-    // 5. Update apple-mobile-web-app-status-bar-style for standalone PWA mode
-    const appleStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (appleStatusMeta) {
-      appleStatusMeta.setAttribute('content', isDarkText ? 'default' : 'black-translucent');
+    // 3. Update the EXISTING theme-color meta tag (do NOT delete, Safari requires mutating existing element)
+    const metaThemeColor = document.getElementById('theme-color-meta') || document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', topbarColor);
     }
-  }, [isDark, isSimulationMode]);
+  }, [isDark, topbarColor]);
 
   const loadData = useCallback(async (showLoader = false) => {
     if (showLoader) setLoading(true);
@@ -317,6 +311,7 @@ export function App() {
         isSettingsOpen={isSettingsOpen}
         onToggleSettings={() => setIsSettingsOpen(prev => !prev)}
         isSimulationMode={isSimulationMode}
+        headerBgColor={topbarColor}
       />
 
       <main className="flex-1 w-full relative min-h-0 overflow-hidden">
