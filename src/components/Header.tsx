@@ -14,7 +14,8 @@ import {
   GraduationCap,
   ChevronDown,
   Layers,
-  EyeOff
+  EyeOff,
+  FlaskConical
 } from 'lucide-react';
 import type { OverallProgress, SimulationResult } from '@shared/types.js';
 import type { LayoutMode } from '../layout.js';
@@ -27,10 +28,12 @@ interface HeaderProps {
   filterMode: FilterMode;
   layoutMode: LayoutMode;
   isDark: boolean;
+  isSimulationMode: boolean;
   onSetFilterMode: (m: FilterMode) => void;
   onSetLayoutMode: (m: LayoutMode) => void;
   onToggleTheme: () => void;
   onOpenSettings: () => void;
+  onStartSimulation: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -39,10 +42,12 @@ export const Header: React.FC<HeaderProps> = ({
   filterMode,
   layoutMode,
   isDark,
+  isSimulationMode,
   onSetFilterMode,
   onSetLayoutMode,
   onToggleTheme,
-  onOpenSettings
+  onOpenSettings,
+  onStartSimulation
 }) => {
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -200,6 +205,21 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
           </div>
+
+          {/* Simulation mode button */}
+          <button
+            onClick={onStartSimulation}
+            disabled={isSimulationMode}
+            className={`min-h-[42px] px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
+              isSimulationMode
+                ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/60 ring-1 ring-amber-500/40 opacity-90 cursor-default'
+                : 'bg-purple-100 text-purple-900 border-purple-300 hover:bg-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/80 dark:hover:bg-purple-900/60'
+            }`}
+            title={isSimulationMode ? 'Modo simulación activo' : 'Iniciar modo de simulación y pruebas'}
+          >
+            <FlaskConical className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span className="hidden sm:inline">Simular</span>
+          </button>
 
           {/* Layout mode button */}
           <button

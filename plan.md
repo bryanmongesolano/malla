@@ -318,7 +318,28 @@ Las opciones no permitidas aparecen deshabilitadas en el menú, con el motivo (e
 
 ---
 
-## 8. Fuera de alcance (v1)
+---
+
+## 8. Modo Simulación (Sandbox)
+
+Permite al usuario probar escenarios hipotéticos ("qué pasa si apruebo X materias", "cómo cambia mi fecha estimada de graduación") sin alterar su avance real en la base de datos.
+
+### 8.1 Especificación acordada
+1. **Activación**: Botón `Simular` en la barra superior (Header) con ícono de matraz/chispas.
+2. **Estado visual activo**: 
+   - Banner superior destacado (color ámbar) que indica claramente que el modo simulación está activo.
+   - Botón accesible para `Volver al avance real` que finaliza la sesión de pruebas.
+3. **Reglas académicas en simulación**: 
+   - Respeta las reglas normales de prerrequisitos (al completar una materia se desbloquean sus dependientes para simular periodos de forma realista).
+   - Recalcula en tiempo real en la UI el porcentaje, créditos, contadores de materias y fecha estimada de graduación.
+4. **Persistencia**:
+   - Modo sandbox 100% en memoria del cliente.
+   - Ninguna acción durante la simulación envía peticiones a la API ni modifica la base de datos SQLite.
+   - Al pulsar `Volver al avance real`, se descartan todos los cambios simulados y se restaura el estado original proveniente del servidor.
+
+---
+
+## 9. Fuera de alcance (v1)
 - Notas/calificaciones y promedio.
 - Correquisitos, requisitos por créditos o del tipo "A o B".
 - Editor de la malla dentro de la app.
@@ -327,5 +348,5 @@ Las opciones no permitidas aparecen deshabilitadas en el menú, con el motivo (e
 - Buscador y panel de detalle de materias normales (solo hay panel para los bloques de optativas).
 - Export/import de progreso (el respaldo lo cubre `backup.sh`).
 
-## 9. Siguiente paso
-Bryan adjunta la malla (PDF/imagen) → **Fase 0**: generar `data/curriculum.json` y revisarlo juntos antes de escribir código.
+## 10. Siguiente paso
+Implementar la sección y lógica de Modo Simulación (Sandbox) en el frontend.
