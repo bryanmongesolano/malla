@@ -49,7 +49,7 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="min-w-[42px] min-h-[42px] flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -115,12 +115,12 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                 </div>
 
                 {/* State selector buttons */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                   {isPrereqsMet ? (
                     <button
                       disabled={!checkBase.allowed && !isBaseSelected}
                       onClick={() => onUpdateStatus(opt.id, 'disponible')}
-                      className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                         isBaseSelected
                           ? 'bg-sky-600 text-white font-bold shadow-sm'
                           : checkBase.allowed
@@ -128,14 +128,14 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                           : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
                       }`}
                     >
-                      <Clock className="w-3.5 h-3.5" />
+                      <Clock className="w-4 h-4 flex-shrink-0" />
                       <span>Disponible</span>
                     </button>
                   ) : (
                     <button
                       disabled={!checkBase.allowed && !isBaseSelected}
                       onClick={() => onUpdateStatus(opt.id, 'bloqueada')}
-                      className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                      className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                         isBaseSelected
                           ? 'bg-slate-300 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold shadow-sm'
                           : checkBase.allowed
@@ -143,7 +143,7 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                           : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
                       }`}
                     >
-                      <Lock className="w-3.5 h-3.5" />
+                      <Lock className="w-4 h-4 flex-shrink-0" />
                       <span>{status === 'suficiencia' ? 'Desmarcar' : 'Bloqueada'}</span>
                     </button>
                   )}
@@ -151,7 +151,7 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                   <button
                     disabled={!checkCursando.allowed && status !== 'cursando'}
                     onClick={() => onUpdateStatus(opt.id, 'cursando')}
-                    className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                       status === 'cursando'
                         ? 'bg-amber-600 text-white font-bold shadow-sm'
                         : checkCursando.allowed
@@ -159,14 +159,14 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                         : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
                     }`}
                   >
-                    <Play className="w-3.5 h-3.5" />
+                    <Play className="w-4 h-4 flex-shrink-0" />
                     <span>Cursando</span>
                   </button>
 
                   <button
                     disabled={!checkSuficiencia.allowed && status !== 'suficiencia'}
                     onClick={() => onUpdateStatus(opt.id, 'suficiencia')}
-                    className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                       status === 'suficiencia'
                         ? isPrereqsMet
                           ? 'bg-purple-600 text-white font-bold shadow-sm'
@@ -176,14 +176,14 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                         : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
                     }`}
                   >
-                    <GraduationCap className="w-3.5 h-3.5" />
+                    <GraduationCap className="w-4 h-4 flex-shrink-0" />
                     <span>Suficiencia</span>
                   </button>
 
                   <button
                     disabled={!checkCompletada.allowed && status !== 'completada'}
                     onClick={() => onUpdateStatus(opt.id, 'completada')}
-                    className={`py-1.5 px-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                    className={`min-h-[44px] py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 ${
                       status === 'completada'
                         ? 'bg-emerald-600 text-white font-bold shadow-sm'
                         : checkCompletada.allowed
@@ -191,7 +191,7 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
                         : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60'
                     }`}
                   >
-                    <Check className="w-3.5 h-3.5" />
+                    <Check className="w-4 h-4 flex-shrink-0" />
                     <span>Completada</span>
                   </button>
                 </div>
