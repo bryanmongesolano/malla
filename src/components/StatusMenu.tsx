@@ -36,23 +36,24 @@ export const StatusMenu: React.FC<StatusMenuProps> = ({
   const checkSuficiencia = canTransition(item.id, 'suficiencia', model, progress);
   const checkCompletada = canTransition(item.id, 'completada', model, progress);
 
-  // Position popover
+  // Position popover if anchorRect provided
   const style: React.CSSProperties = {};
   if (anchorRect && window.innerWidth >= 640) {
     const top = Math.min(window.innerHeight - 260, Math.max(80, anchorRect.top - 20));
     const left = Math.min(window.innerWidth - 300, Math.max(20, anchorRect.right + 16));
     style.top = `${top}px`;
     style.left = `${left}px`;
+    style.position = 'absolute';
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:justify-start bg-black/60 backdrop-blur-sm transition-opacity">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
       {/* Click outside to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
         style={style}
-        className="relative z-10 w-full sm:w-[280px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-t-3xl sm:rounded-2xl p-3.5 sm:p-4 shadow-2xl animate-in fade-in slide-in-from-bottom sm:slide-in-from-left duration-200"
+        className="relative z-10 w-full sm:w-[280px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-t-3xl sm:rounded-2xl p-3.5 sm:p-4 shadow-2xl animate-in fade-in slide-in-from-bottom sm:slide-in-from-bottom duration-200"
       >
         {/* Mobile drag handle */}
         <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />

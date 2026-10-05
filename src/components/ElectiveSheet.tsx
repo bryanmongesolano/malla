@@ -40,10 +40,10 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{block.name}</h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                Selecciona {block.required} curso(s) electivo(s)
+                Selecciona las optativas
               </span>
               <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 font-semibold">
-                {completedCount} / {block.required} completado(s)
+                {completedCount} / {block.required}
               </span>
             </div>
           </div>
@@ -59,7 +59,7 @@ export const ElectiveSheet: React.FC<ElectiveSheetProps> = ({
         {blockStatus === 'bloqueada' && (
           <div className="my-3 p-3 rounded-xl bg-amber-100 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-600/40 text-amber-800 dark:text-amber-200 text-xs flex items-center gap-2">
             <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-            <span>Este bloque aún tiene requisitos pendientes antes de poder cursar sus opciones.</span>
+            <span>Requisitos aún pendientes</span>
           </div>
         )}
 

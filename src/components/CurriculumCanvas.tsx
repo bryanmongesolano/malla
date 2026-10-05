@@ -46,7 +46,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // StatusMenu modal state (for standard courses)
-  const [menuCourse, setMenuCourse] = useState<{ item: StandardCourse; anchor: DOMRect } | null>(null);
+  const [menuCourse, setMenuCourse] = useState<{ item: StandardCourse; anchor: DOMRect | null } | null>(null);
 
   // ElectiveSheet modal state (for elective blocks)
   const [sheetBlock, setSheetBlock] = useState<ElectiveBlock | null>(null);
@@ -76,19 +76,16 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     setSelectedId(prev => (prev === id ? null : id));
   }, []);
 
-  const handleOpenMenu = useCallback((id: string, anchorRect: DOMRect) => {
-    const item = model.getItem(id);
-    if (item && !isElectiveBlock(item)) {
-      setMenuCourse({ item, anchor: anchorRect });
-    }
-  }, [model]);
-
-  const handleOpenSheet = useCallback((id: string) => {
-    const item = model.getItem(id);
-    if (item && isElectiveBlock(item)) {
+  const handleOpenSelection = useCallback(() => {
+    if (!selectedId) return;
+    const item = model.getItem(selectedId);
+    if (!item) return;
+    if (isElectiveBlock(item)) {
       setSheetBlock(item);
+    } else {
+      setMenuCourse({ item, anchor: null });
     }
-  }, [model]);
+  }, [selectedId, model]);
 
   // Decorate nodes with current statuses, highlights, gestures
   const displayNodes = useMemo(() => {
@@ -132,8 +129,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
             isDimmed,
             isFiltered,
             isUnlockedByCursando,
-            highlightRole,
-            onOpenSheet: handleOpenSheet
+            highlightRole
           }
         };
       }
@@ -147,8 +143,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           isDimmed,
           isFiltered,
           isUnlockedByCursando,
-          highlightRole,
-          onOpenMenu: handleOpenMenu
+          highlightRole
         }
       };
     });
@@ -161,9 +156,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
     ancestors,
     directDependents,
     filterMode,
-    unlockedByCursando,
-    handleOpenMenu,
-    handleOpenSheet
+    unlockedByCursando
   ]);
 
   // Decorate edges with highlight styling
@@ -311,7 +304,7 @@ export const CurriculumCanvas: React.FC<CurriculumCanvasProps> = ({
           size={1.2}
           color={isDark ? "#1e293b" : "#cbd5e1"}
         />
-        <CanvasControls />
+        <CanvasControls hasSelection={!!selectedId} onEdit={handleOpenSelection} />
         <CanvasGestures />
       </ReactFlow>
 

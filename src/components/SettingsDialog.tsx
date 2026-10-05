@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sliders, Check } from 'lucide-react';
+import { X, Settings, Check } from 'lucide-react';
 
 interface SettingsDialogProps {
   currentCoursesPerPeriod: number;
@@ -33,8 +33,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
       <div className="relative z-10 w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-5 shadow-2xl">
         <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2 text-slate-900 dark:text-slate-100 font-bold">
-            <Sliders className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-            <h3>Configuración de Simulación</h3>
+            <Settings className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+            <h3 className="text-base font-bold">Ajustes</h3>
           </div>
           <button
             onClick={onClose}
@@ -46,11 +46,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Materias cursadas por cuatrimestre
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-0.5">
+              Materias por cuatrimestre
             </label>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
-              Define tu ritmo estimado de estudio. La simulación respetará la ruta crítica y prerrequisitos.
+              Ritmo de estudio
             </p>
 
             <div className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
@@ -83,7 +83,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
               className="min-h-[44px] px-5 py-2.5 rounded-xl text-sm font-semibold bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer shadow-sm active:scale-95"
             >
               <Check className="w-4 h-4" />
-              <span>{saving ? 'Guardando...' : 'Aplicar'}</span>
+              <span>{saving ? 'Guardando...' : 'Guardar'}</span>
             </button>
           </div>
         </form>

@@ -12,7 +12,7 @@ import {
   simulateGraduation,
   canTransition
 } from '@shared/index.js';
-import { AlertCircle, Loader2, FlaskConical, Undo2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 export function App() {
   const [state, setState] = useState<FullClientState | null>(null);
@@ -230,32 +230,8 @@ export function App() {
         onToggleTheme={() => setIsDark(prev => !prev)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onStartSimulation={handleStartSimulation}
+        onExitSimulation={handleExitSimulation}
       />
-
-      {/* Simulation Banner */}
-      {isSimulationMode && (
-        <div className="w-full bg-amber-500/15 border-b border-amber-500/30 px-3 py-2 sm:px-6 sm:py-2.5 flex items-center justify-between gap-3 text-amber-950 dark:text-amber-100 z-30 shadow-sm animate-in fade-in slide-in-from-top duration-200">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-1.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex-shrink-0">
-              <FlaskConical className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 min-w-0">
-              <span className="text-xs sm:text-sm font-bold truncate">Modo Simulación activo</span>
-              <span className="text-[11px] sm:text-xs text-amber-800/85 dark:text-amber-300/85 hidden xs:inline truncate">
-                Prueba cambios y escenarios sin alterar tus datos reales.
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={handleExitSimulation}
-            className="min-h-[40px] px-4 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs sm:text-sm font-bold shadow-md flex items-center gap-2 transition-all cursor-pointer active:scale-95 flex-shrink-0"
-          >
-            <Undo2 className="w-4 h-4" />
-            <span>Volver al avance real</span>
-          </button>
-        </div>
-      )}
 
       <main className="flex-1 w-full relative min-h-0 overflow-hidden">
         <CurriculumCanvas

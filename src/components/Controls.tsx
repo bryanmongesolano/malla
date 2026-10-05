@@ -1,8 +1,13 @@
 import React from 'react';
 import { useReactFlow } from '@xyflow/react';
-import { Crosshair } from 'lucide-react';
+import { Crosshair, Pencil } from 'lucide-react';
 
-export const CanvasControls: React.FC = () => {
+interface CanvasControlsProps {
+  hasSelection?: boolean;
+  onEdit?: () => void;
+}
+
+export const CanvasControls: React.FC<CanvasControlsProps> = ({ hasSelection, onEdit }) => {
   const { fitView, getNodes, getNodesBounds, getViewport, setCenter } = useReactFlow();
 
   const handleToggleView = () => {
@@ -40,10 +45,22 @@ export const CanvasControls: React.FC = () => {
   };
 
   return (
-    <div className="absolute bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-4 z-30 bg-slate-900/90 border border-slate-700/80 p-1.5 rounded-2xl shadow-2xl backdrop-blur-md nodrag nopan">
+    <div className="absolute bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] right-4 z-30 flex flex-col items-center gap-2 nodrag nopan">
+      {/* Floating Edit Button (appears smoothly above crosshair when a node is selected) */}
+      {hasSelection && (
+        <button
+          onClick={onEdit}
+          className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center bg-slate-900/95 border border-slate-700/80 text-cyan-400 hover:text-cyan-300 hover:bg-slate-800 rounded-2xl shadow-2xl backdrop-blur-md transition-all cursor-pointer active:scale-95 animate-in fade-in zoom-in-95 duration-200"
+          title="Editar estado"
+        >
+          <Pencil className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Crosshair Button */}
       <button
         onClick={handleToggleView}
-        className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition-all cursor-pointer active:scale-95 shadow-sm"
+        className="w-12 h-12 min-w-[48px] min-h-[48px] flex items-center justify-center bg-slate-900/90 border border-slate-700/80 text-slate-300 hover:text-white hover:bg-slate-800 rounded-2xl shadow-2xl backdrop-blur-md transition-all cursor-pointer active:scale-95"
         title="Centrar o alternar zoom"
       >
         <Crosshair className="w-6 h-6 text-cyan-400 hover:text-cyan-300" />
@@ -51,4 +68,3 @@ export const CanvasControls: React.FC = () => {
     </div>
   );
 };
-
