@@ -20,6 +20,15 @@ html, body, #root, .react-flow, .react-flow__node {
   touch-action: manipulation;
 }
 
+/* Ensure no CSS transition can run on status-bar sampling elements, preventing WebKit PageColorSampler from bailing */
+html,
+body,
+#root,
+#ios-status-bar-tint,
+header {
+  transition: none !important;
+}
+
 /* Eliminate native browser focus outline and tap-highlight on canvas, nodes and flowchart elements */
 .react-flow,
 .react-flow *,

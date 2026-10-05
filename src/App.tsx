@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback, useMemo } from 'react';
 import { fetchState, updateProgress, updateSettings, type FullClientState } from './api.js';
 import { Header, type FilterMode } from './components/Header.js';
 import { CurriculumCanvas } from './components/CurriculumCanvas.js';
@@ -65,7 +65,7 @@ export function App() {
     return computeThemeColor(isDark, isSimulationMode).color;
   }, [isDark, isSimulationMode]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // 1. Toggle dark class first so DOM styles reflect the active theme
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -77,7 +77,7 @@ export function App() {
       localStorage.setItem('malla_theme', 'light');
     }
 
-    // 2. Set on html/body and CSS variable
+    // 2. Set on html/body and CSS variable synchronously BEFORE paint
     document.documentElement.style.setProperty('--topbar-bg', topbarColor);
     document.documentElement.style.backgroundColor = topbarColor;
     document.body.style.backgroundColor = topbarColor;
@@ -88,11 +88,14 @@ export function App() {
       statusBarTint.style.backgroundColor = topbarColor;
     }
 
-    // 4. Update the EXISTING theme-color meta tag (updates Safari bottom URL bar and Chrome/Android)
+    // 4. Update the theme-color meta tag synchronously BEFORE paint (updates Safari URL bar and Android/Chrome)
     const metaThemeColor = document.getElementById('theme-color-meta') || document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', topbarColor);
     }
+
+    // 5. Force layout flush so WebKit computes styles immediately before composite
+    void document.body.offsetHeight;
   }, [isDark, topbarColor]);
 
   const loadData = useCallback(async (showLoader = false) => {
@@ -310,7 +313,7 @@ export function App() {
   }
 
   return (
-    <div className="w-full h-[100dvh] max-h-[100dvh] flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden font-sans transition-colors duration-200">
+    <div className="w-full h-[100dvh] max-h-[100dvh] flex flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 overflow-hidden font-sans">
       <Header
         overall={activeState.overall}
         simulation={activeState.simulation}

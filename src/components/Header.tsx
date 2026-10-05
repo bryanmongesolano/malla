@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
     : (simulation.estimatedGraduationDate?.toLowerCase() || remainingText);
   return (
     <header
-      className={`sticky top-0 z-40 w-full px-3.5 pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2 sm:px-5 sm:pt-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:pb-2.5 transition-colors duration-200 ${
+      className={`sticky top-0 z-40 w-full px-3.5 pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2 sm:px-5 sm:pt-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:pb-2.5 ${
         isSimulationMode
           ? 'border-b border-amber-500/50 dark:border-amber-500/40'
           : 'border-b border-slate-200 dark:border-slate-800/80'
