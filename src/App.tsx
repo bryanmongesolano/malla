@@ -61,7 +61,13 @@ export function App() {
 
   useEffect(() => {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    const color = isDark ? '#020617' : '#ffffff';
+    let color: string;
+    if (isSimulationMode) {
+      color = isDark ? '#261b0c' : '#fef0c7';
+    } else {
+      color = isDark ? '#020617' : '#ffffff';
+    }
+
     if (isDark) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('malla_theme', 'dark');
@@ -73,7 +79,7 @@ export function App() {
       metaThemeColor.setAttribute('content', color);
     }
     document.documentElement.style.backgroundColor = color;
-  }, [isDark]);
+  }, [isDark, isSimulationMode]);
 
   const loadData = useCallback(async (showLoader = false) => {
     if (showLoader) setLoading(true);

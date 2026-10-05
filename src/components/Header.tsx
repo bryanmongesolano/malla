@@ -50,7 +50,11 @@ export const Header: React.FC<HeaderProps> = ({
     ? remainingText
     : (simulation.estimatedGraduationDate?.toLowerCase() || remainingText);
   return (
-    <header className="sticky top-0 z-40 w-full bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 px-3.5 pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2 sm:px-5 sm:pt-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:pb-2.5 transition-colors duration-200">
+    <header className={`sticky top-0 z-40 w-full px-3.5 pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2 sm:px-5 sm:pt-[calc(0.625rem+env(safe-area-inset-top,0px))] sm:pb-2.5 transition-colors duration-200 ${
+      isSimulationMode
+        ? 'bg-amber-500/20 dark:bg-amber-500/20 backdrop-blur-md border-b border-amber-500/50 dark:border-amber-500/40'
+        : 'bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80'
+    }`}>
       <div className="flex items-center justify-between gap-5 sm:gap-7 max-w-7xl mx-auto">
         {/* Progress bar + metrics on left */}
         <div className="flex-1 flex flex-col justify-center gap-2 min-w-0">
@@ -92,14 +96,6 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Right: Percentage (in progress bar green) at the left of date, and graduation date */}
             <div className="flex items-center gap-2 sm:gap-2.5 ml-auto shrink-0 font-medium">
-              {isSimulationMode && (
-                <span
-                  className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold text-[10px] tracking-wider uppercase border border-amber-500/30"
-                  title="Modo planeación activo: los cambios son un borrador y no tocan la base de datos"
-                >
-                  Planeación
-                </span>
-              )}
               <span className="text-xs font-mono font-bold text-emerald-500 dark:text-emerald-400">
                 {overall.percentCompleted}%
               </span>
